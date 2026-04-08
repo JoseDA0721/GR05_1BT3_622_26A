@@ -193,7 +193,7 @@
             <div class="mt-6 text-center">
                 <p class="text-gray-600">
                     ¿Ya tienes una cuenta?
-                    <a href="login.jsp" class="text-indigo-600 hover:text-indigo-700 font-semibold">
+                    <a href="${pageContext.request.contextPath}/login" class="text-indigo-600 hover:text-indigo-700 font-semibold">
                         Inicia Sesión
                     </a>
                 </p>

@@ -12,7 +12,7 @@ import org.redsaberes.util.EmailUtil;
 
 import java.io.IOException;
 
-@WebServlet("/registerServlet")
+@WebServlet("/register")
 public class RegisterServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
