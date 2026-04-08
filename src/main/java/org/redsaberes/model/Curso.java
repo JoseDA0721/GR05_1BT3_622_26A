@@ -8,12 +8,18 @@ public class Curso {
     private String nivelDificultad;
     private String imagenPortada;
     private EstadoCurso estado;
+    private Integer usuarioId;
 
     public Curso() {
     }
 
     public Curso(Integer id, String titulo, String descripcion, String categoria, String nivelDificultad,
                  String imagenPortada, EstadoCurso estado) {
+        this(id, titulo, descripcion, categoria, nivelDificultad, imagenPortada, estado, null);
+    }
+
+    public Curso(Integer id, String titulo, String descripcion, String categoria, String nivelDificultad,
+                 String imagenPortada, EstadoCurso estado, Integer usuarioId) {
         this.id = id;
         this.titulo = titulo;
         this.descripcion = descripcion;
@@ -21,6 +27,7 @@ public class Curso {
         this.nivelDificultad = nivelDificultad;
         this.imagenPortada = imagenPortada;
         this.estado = estado;
+        this.usuarioId = usuarioId;
     }
 
     public Integer getId() {
@@ -77,5 +84,13 @@ public class Curso {
 
     public void setEstado(EstadoCurso estado) {
         this.estado = estado;
+    }
+
+    public Integer getUsuarioId() {
+        return usuarioId;
+    }
+
+    public void setUsuarioId(Integer usuarioId) {
+        this.usuarioId = usuarioId;
     }
 }

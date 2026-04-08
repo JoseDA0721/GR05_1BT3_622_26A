@@ -8,3 +8,11 @@
 # Datasource local storage ignored files
 /dataSources/
 /dataSources.local.xml
+/dataSources.xml
+# Local history of changes
+/localHistory/
+# Log files/log/
+# Deployment files/deployment.xml
+# File-based project format
+*.iws
+*.iml
