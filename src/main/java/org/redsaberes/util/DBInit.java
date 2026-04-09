@@ -8,8 +8,11 @@ public class DBInit {
         nombre TEXT NOT NULL,
         correo TEXT UNIQUE NOT NULL,
         contrasena TEXT NOT NULL,
-        token_sesion TEXT
+        token_sesion TEXT,
+        token_recuperacion TEXT,
+        expiracion_token INTEGER
       );
+      
       CREATE TABLE IF NOT EXISTS curso (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         titulo TEXT NOT NULL,
@@ -55,6 +58,7 @@ public class DBInit {
         curso1_id INTEGER,
         curso2_id INTEGER
       );
+      
     """;
         try (var conn = DBConnection.getConnection();
              var stmt = conn.createStatement()) {

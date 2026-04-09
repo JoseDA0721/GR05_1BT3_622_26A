@@ -78,20 +78,65 @@ public class UsuarioDAO {
         return UUID.randomUUID().toString();
     }
 
-    /**
-     * Obtiene la contraseña hasheada de un usuario por su correo
-     * Útil para verificación de login
-     */
-    public String obtenerHashContrasena(String correo) throws SQLException {
-        String sql = "SELECT contrasena FROM usuario WHERE correo = ?";
+    //Verificar que existe el correo para recuperar contraseña
+    public boolean existeCorreo(String correo) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM usuario WHERE correo = ?";
         try (Connection conn = DBConnection.getConnection();
-        PreparedStatement stmt = conn.prepareStatement(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, correo);
             ResultSet rs = stmt.executeQuery();
+            return rs.next() && rs.getInt(1) > 0;
+        }
+    }
+
+    public void guardarTokenRecuperacion(
+            String correo,
+            String token
+    ) throws SQLException {
+        long expiracion = System.currentTimeMillis()
+                + (24 *  60 * 60 * 1000L);
+        String sql = "UPDATE usuario " +
+                "SET token_recuperacion = ?," +
+                "expiracion_token = ? " +
+                "WHERE correo = ?";
+        try (Connection conn = DBConnection.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, token);
+            stmt.setLong(2, expiracion);
+            stmt.setString(3, correo);
+            stmt.executeUpdate();
+        }
+    }
+
+    public boolean tokenValido(String token) throws SQLException {
+        String sql = "SELECT expiracion_token FROM usuario " +
+                "WHERE token_recuperacion = ?";
+        try(Connection conn = DBConnection.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql)){
+            stmt.setString(1, token);
+            ResultSet rs = stmt.executeQuery();
             if(rs.next()) {
-                return rs.getString("contrasena");
+                long expiracion = rs.getLong("expiracion_token");
+                return System.currentTimeMillis() < expiracion;
             }
         }
-        return null;
+        return false;
+    }
+
+    public void actualizarContrasena(
+            String token,
+            String nuevaContrasena
+    ) throws SQLException {
+        String sql = "UPDATE usuario " +
+                "SET contrasena = ?, " +
+                "token_recuperacion = NULL, " +
+                "expiracion_token = NULL " +
+                "WHERE token_recuperacion = ?";
+        try (Connection conn = DBConnection.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql)){
+            stmt.setString(1, nuevaContrasena);
+            stmt.setString(2, token);
+            stmt.executeUpdate();
+        }
     }
 }
