@@ -3,15 +3,20 @@ package org.redsaberes.servlet;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
-import org.redsaberes.dao.UsuarioDAO;
+import org.mindrot.jbcrypt.BCrypt;
 import org.redsaberes.model.Usuario;
+import org.redsaberes.repository.UsuarioRepository;
+import org.redsaberes.repository.impl.UsuarioRepositoryImpl;
 
 import java.io.IOException;
+import java.util.Optional;
+import java.util.UUID;
 
 @WebServlet("/login")
 public class LoginServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
-    //private static final int MAX_LOGIN_ATTEMPTS = 5;
+    private UsuarioRepository usuarioRepository = new UsuarioRepositoryImpl();
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try{
@@ -48,33 +53,41 @@ public class LoginServlet extends HttpServlet {
             }
 
             //Verificar credenciales en la BD
-            UsuarioDAO dao = new UsuarioDAO();
-            Usuario usuario = dao.validarAcceso(correo, contrasena);
+            Optional<Usuario> usuarioOpt = usuarioRepository.findByCorreo(correo);
 
-            if(usuario != null){
-                //Generar token
-                String token = UsuarioDAO.generarToken();
-                dao.guardarToken(usuario.getId(), token);
-                usuario.setTokenSesion(token);
+            if(usuarioOpt.isPresent()){
+                Usuario usuario = usuarioOpt.get();
 
-                //Permitir acceso
-                HttpSession session = request.getSession();
-                session.setAttribute("usuario", usuario);
-                session.setAttribute("token", token);
+                // Validar contraseña con BCrypt
+                if(BCrypt.checkpw(contrasena, usuario.getContrasena())){
+                    //Generar token
+                    String token = generarToken();
+                    usuario.setTokenSesion(token);
+                    usuarioRepository.actualizarToken(usuario.getId(), token);
 
-                //Recordame
-                if(remember != null){
-                    Cookie cookie = new Cookie("email", correo);
-                    cookie.setMaxAge(30 * 24 * 60 * 60);
-                    cookie.setPath("/");
-                    cookie.setHttpOnly(true);
-                    response.addCookie(cookie);
+                    //Permitir acceso
+                    HttpSession session = request.getSession();
+                    session.setAttribute("usuario", usuario);
+                    session.setAttribute("token", token);
+
+                    //Recordame
+                    if(remember != null){
+                        Cookie cookie = new Cookie("email", correo);
+                        cookie.setMaxAge(30 * 24 * 60 * 60);
+                        cookie.setPath("/");
+                        cookie.setHttpOnly(true);
+                        response.addCookie(cookie);
+                    }
+
+                    //Redirigir al dashboard
+                    response.sendRedirect(request.getContextPath() + "/dashboard");
+                } else {
+                    //Contraseña incorrecta
+                    request.setAttribute("error", "Correo o contraseña incorrectos");
+                    request.getRequestDispatcher("/WEB-INF/views/inc1/login.jsp").forward(request, response);
                 }
-
-                //Redirigir al dashboard
-                response.sendRedirect(request.getContextPath() + "/dashboard");
             } else {
-                //Credenciales invalidadas
+                //Usuario no encontrado
                 request.setAttribute("error", "Correo o contraseña incorrectos");
                 request.getRequestDispatcher("/WEB-INF/views/inc1/login.jsp").forward(request, response);
             }
@@ -90,6 +103,10 @@ public class LoginServlet extends HttpServlet {
     private boolean isValidEmail(String email) {
         String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
         return email.matches(emailRegex);
+    }
+
+    private String generarToken() {
+        return UUID.randomUUID().toString();
     }
 
 }

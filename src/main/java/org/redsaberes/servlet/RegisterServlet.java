@@ -6,8 +6,9 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.mindrot.jbcrypt.BCrypt;
-import org.redsaberes.dao.UsuarioDAO;
 import org.redsaberes.model.Usuario;
+import org.redsaberes.repository.UsuarioRepository;
+import org.redsaberes.repository.impl.UsuarioRepositoryImpl;
 import org.redsaberes.util.EmailUtil;
 
 import java.io.IOException;
@@ -15,6 +16,7 @@ import java.io.IOException;
 @WebServlet("/register")
 public class RegisterServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
+    private UsuarioRepository usuarioRepository = new UsuarioRepositoryImpl();
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -80,10 +82,8 @@ public class RegisterServlet extends HttpServlet {
                 return;
             }
 
-            UsuarioDAO dao = new UsuarioDAO();
-
             //Verificar disponibilidad de correo
-            boolean correoDisponible = dao.verificarCorreoUnico(correo);
+            boolean correoDisponible = !usuarioRepository.existeCorreo(correo);
             if(!correoDisponible) {
                 request.setAttribute("error", "El correo ya está registrado");
                 request.getRequestDispatcher("/WEB-INF/views/inc1/register.jsp").forward(request, response);
@@ -91,10 +91,14 @@ public class RegisterServlet extends HttpServlet {
             }
 
             //Hash de la contraseña
-            String hashedContrasena = hashedContrasena(contrasena);
+            String hashedContrasena = hashearContrasena(contrasena);
 
             //Registrar usuario
-            dao.registrarUsuario(nombre, correo, hashedContrasena);
+            usuario.setNombre(nombre);
+            usuario.setCorreoElectronico(correo);
+            usuario.setContrasena(hashedContrasena);
+            usuarioRepository.save(usuario);
+
             EmailUtil.enviarConfirmacion(correo, nombre);
 
             request.setAttribute("success", "Registro exitoso. Por favor revise su correo.");
@@ -117,11 +121,11 @@ public class RegisterServlet extends HttpServlet {
         return email.matches(emailRegex);
     }
 
-    private String hashedContrasena(String contrasena) {
+    private String hashearContrasena(String contrasena) {
         return BCrypt.hashpw(contrasena, BCrypt.gensalt(12));
     }
 
-    // GET → mostrar registro.jsp (:PantallaRegistro)
+    // GET → mostrar registro.jsp
     @Override
     protected void doGet(HttpServletRequest req,
                          HttpServletResponse res)
