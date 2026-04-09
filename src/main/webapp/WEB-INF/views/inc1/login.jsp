@@ -79,7 +79,7 @@
                 </div>
             </c:if>
 
-            <form action="loginServlet" method="POST" id="loginForm" class="space-y-6">
+            <form action="${pageContext.request.contextPath}/login" method="POST" id="loginForm" class="space-y-6">
 
                 <!-- Correo Electrónico -->
                 <div>

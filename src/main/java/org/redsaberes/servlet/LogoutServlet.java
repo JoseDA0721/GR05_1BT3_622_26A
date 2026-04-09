@@ -6,7 +6,7 @@ import jakarta.servlet.http.*;
 
 import java.io.IOException;
 
-@WebServlet
+@WebServlet ("/logout")
 public class LogoutServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
@@ -28,7 +28,7 @@ public class LogoutServlet extends HttpServlet {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                if ("rememberedEmail".equals(cookie.getName())) {
+                if ("email".equals(cookie.getName())) {
                     cookie.setValue("");
                     cookie.setMaxAge(0);
                     cookie.setPath("/");
@@ -38,7 +38,6 @@ public class LogoutServlet extends HttpServlet {
         }
 
         // Redirigir a la página de login con mensaje de éxito
-        request.setAttribute("success", "Has cerrado sesión exitosamente");
-        response.sendRedirect("login.jsp?logout=success");
+        response.sendRedirect(request.getContextPath() + "/login?logout=success");
     }
 }

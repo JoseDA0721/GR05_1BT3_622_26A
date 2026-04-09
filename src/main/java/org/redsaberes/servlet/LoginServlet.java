@@ -72,7 +72,7 @@ public class LoginServlet extends HttpServlet {
                 }
 
                 //Redirigir al dashboard
-                response.sendRedirect("dashboard.jsp");
+                response.sendRedirect(request.getContextPath() + "/dashboard");
             } else {
                 //Credenciales invalidadas
                 request.setAttribute("error", "Correo o contraseña incorrectos");
@@ -81,9 +81,8 @@ public class LoginServlet extends HttpServlet {
 
         }catch(Exception e){
             e.printStackTrace();
-            response.sendRedirect(
-                    request.getContextPath() + "/WEB-INF/views/inc1/login.jsp?error=1"
-            );
+            request.setAttribute("error", "Error del servidor");
+            request.getRequestDispatcher("/WEB-INF/views/inc1/login.jsp").forward(request, response);
         }
 
     }

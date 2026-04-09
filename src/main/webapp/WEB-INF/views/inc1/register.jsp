@@ -78,7 +78,7 @@
                 </div>
             </c:if>
 
-            <form action="registerServlet" method="POST" id="registerForm" class="space-y-5">
+            <form action="${pageContext.request.contextPath}/register" method="POST" id="registerForm" class="space-y-5">
 
                 <!-- Nombre Completo -->
                 <div>

@@ -29,7 +29,7 @@ public class AuthFilter implements Filter {
         if(login) {
             chain.doFilter(request, response);
         } else {
-            httpResponse.sendRedirect("/login");
+            httpResponse.sendRedirect(httpRequest.getContextPath() + "/login?error=session_expired");
         }
     }
 }
