@@ -6,13 +6,17 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.mindrot.jbcrypt.BCrypt;
-import org.redsaberes.dao.UsuarioDAO;
+import org.redsaberes.model.Usuario;
+import org.redsaberes.repository.UsuarioRepository;
+import org.redsaberes.repository.impl.UsuarioRepositoryImpl;
 
 import java.io.IOException;
+import java.util.Optional;
 
 @WebServlet("/reset-password")
 public class ResetPasswordServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
+    private UsuarioRepository usuarioRepository = new UsuarioRepositoryImpl();
 
     @Override
     protected void doGet(HttpServletRequest request,
@@ -64,17 +68,27 @@ public class ResetPasswordServlet extends HttpServlet {
             }
 
             //Verificar valides del token
-            UsuarioDAO dao = new UsuarioDAO();
-            boolean tokenValido = dao.tokenValido(token);
-            if (!tokenValido) {
+            Optional<Usuario> usuarioOpt = usuarioRepository.findByTokenRecuperacion(token);
+            if (!usuarioOpt.isPresent()) {
                 request.setAttribute("error", "El enlace de recuperación no es válido o ha expirado");
                 request.getRequestDispatcher("/WEB-INF/views/inc1/reset-password.jsp?token=" + token).forward(request, response);
                 return;
             }
 
-            String contrasenaHashed = hashedContrasena(contrasena);
+            Usuario usuario = usuarioOpt.get();
 
-            dao.actualizarContrasena(token, contrasenaHashed);
+            // Validar que el token no haya expirado
+            if (usuario.getExpiracionToken() != null && usuario.getExpiracionToken() < System.currentTimeMillis()) {
+                request.setAttribute("error", "El enlace de recuperación ha expirado");
+                request.getRequestDispatcher("/WEB-INF/views/inc1/reset-password.jsp?token=" + token).forward(request, response);
+                return;
+            }
+
+            String contrasenaHashed = hashearContrasena(contrasena);
+            usuario.setContrasena(contrasenaHashed);
+            usuario.setTokenRecuperacion(null);
+            usuario.setExpiracionToken(null);
+            usuarioRepository.update(usuario);
 
              // Redirigir al login con mensaje de éxito
              response.sendRedirect(request.getContextPath() + "/login?passwordReset=success");
@@ -86,7 +100,7 @@ public class ResetPasswordServlet extends HttpServlet {
         }
     }
 
-    private String hashedContrasena(String contrasena) {
+    private String hashearContrasena(String contrasena) {
         return BCrypt.hashpw(contrasena, BCrypt.gensalt(12));
     }
 }

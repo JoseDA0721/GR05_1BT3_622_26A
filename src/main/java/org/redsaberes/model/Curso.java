@@ -1,14 +1,52 @@
 package org.redsaberes.model;
 
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Table(name = "curso")
 public class Curso {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+
+    @Column(nullable = false)
+    @NotBlank(message = "El título es requerido")
     private String titulo;
+
+    @Column(columnDefinition = "TEXT")
     private String descripcion;
+
+    @Column
     private String categoria;
+
+    @Column(name = "nivel_dificultad")
     private String nivelDificultad;
+
+    @Column(name = "imagen_portada")
     private String imagenPortada;
-    private EstadoCurso estado;
-    private Integer usuarioId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "estado", nullable = false)
+    private EstadoCurso estado = EstadoCurso.BORRADOR;
+
+    // ===== RELACIONES =====
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id", nullable = false)
+    private Usuario usuario;
+
+    @OneToMany(mappedBy = "curso", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<Modulo> modulos = new ArrayList<>();
+
+    @OneToMany(mappedBy = "curso", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<LikeCurso> likes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "curso", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<Inscripcion> inscripciones = new ArrayList<>();
 
     public Curso() {
     }
@@ -19,7 +57,7 @@ public class Curso {
     }
 
     public Curso(Integer id, String titulo, String descripcion, String categoria, String nivelDificultad,
-                 String imagenPortada, EstadoCurso estado, Integer usuarioId) {
+                 String imagenPortada, EstadoCurso estado, Usuario usuario) {
         this.id = id;
         this.titulo = titulo;
         this.descripcion = descripcion;
@@ -27,9 +65,10 @@ public class Curso {
         this.nivelDificultad = nivelDificultad;
         this.imagenPortada = imagenPortada;
         this.estado = estado;
-        this.usuarioId = usuarioId;
+        this.usuario = usuario;
     }
 
+    // ...existing getters and setters...
     public Integer getId() {
         return id;
     }
@@ -86,11 +125,49 @@ public class Curso {
         this.estado = estado;
     }
 
-    public Integer getUsuarioId() {
-        return usuarioId;
+    public Usuario getUsuario() {
+        return usuario;
     }
 
-    public void setUsuarioId(Integer usuarioId) {
-        this.usuarioId = usuarioId;
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
+    }
+
+    public List<Modulo> getModulos() {
+        return modulos;
+    }
+
+    public void setModulos(List<Modulo> modulos) {
+        this.modulos = modulos;
+    }
+
+    public List<LikeCurso> getLikes() {
+        return likes;
+    }
+
+    public void setLikes(List<LikeCurso> likes) {
+        this.likes = likes;
+    }
+
+    public List<Inscripcion> getInscripciones() {
+        return inscripciones;
+    }
+
+    public void setInscripciones(List<Inscripcion> inscripciones) {
+        this.inscripciones = inscripciones;
+    }
+
+    // ===== MÉTODOS HELPER =====
+
+    public Integer getModulosCount() {
+        return modulos.size();
+    }
+
+    public Integer getLikesCount() {
+        return likes.size();
+    }
+
+    public Integer getInscritosCount() {
+        return inscripciones.size();
     }
 }

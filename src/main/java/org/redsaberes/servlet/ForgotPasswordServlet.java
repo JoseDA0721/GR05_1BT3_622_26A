@@ -6,14 +6,17 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import org.redsaberes.dao.UsuarioDAO;
+import org.redsaberes.repository.UsuarioRepository;
+import org.redsaberes.repository.impl.UsuarioRepositoryImpl;
 import org.redsaberes.util.EmailUtil;
 
 import java.io.IOException;
+import java.util.UUID;
 
 @WebServlet("/forgot-password")
 public class ForgotPasswordServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
+    private UsuarioRepository usuarioRepository = new UsuarioRepositoryImpl();
 
     @Override
     protected void doGet(HttpServletRequest request,
@@ -51,13 +54,12 @@ public class ForgotPasswordServlet extends HttpServlet {
              }
 
             //Verificar si el correo existe
-            UsuarioDAO dao = new UsuarioDAO();
-
-            boolean correoExiste = dao.existeCorreo(correo);
+            boolean correoExiste = usuarioRepository.existeCorreo(correo);
             if(correoExiste){
-                String token = UsuarioDAO.generarToken();
+                String token = generarToken();
 
-                dao.guardarTokenRecuperacion(correo, token);
+                Long expiracion = System.currentTimeMillis() + (24 * 60 * 60 * 1000); // 24 horas
+                usuarioRepository.actualizarTokenRecuperacion(correo, token, expiracion);
 
                 String baseUrl = request.getScheme() + "://"
                         + request.getServerName() + ":"
@@ -81,6 +83,10 @@ public class ForgotPasswordServlet extends HttpServlet {
     private boolean isValidEmail(String email) {
         String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
         return email.matches(emailRegex);
+    }
+
+    private String generarToken() {
+        return UUID.randomUUID().toString();
     }
 
 }

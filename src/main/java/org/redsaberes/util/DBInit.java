@@ -1,70 +1,35 @@
 package org.redsaberes.util;
 
+/**
+ * Inicialización de la base de datos
+ * Con Hibernate, las tablas se crean automáticamente basadas en las anotaciones @Entity
+ * Esta clase asegura que Hibernate esté correctamente inicializado
+ */
 public class DBInit {
     public static void init() {
-        String sql = """
-      CREATE TABLE IF NOT EXISTS usuario (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nombre TEXT NOT NULL,
-        correo TEXT UNIQUE NOT NULL,
-        contrasena TEXT NOT NULL,
-        token_sesion TEXT,
-        token_recuperacion TEXT,
-        expiracion_token INTEGER
-      );
-      
-      CREATE TABLE IF NOT EXISTS curso (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        titulo TEXT NOT NULL,
-        descripcion TEXT,
-        categoria TEXT,
-        nivel_dificultad TEXT,
-        imagen_portada TEXT,
-        estado TEXT DEFAULT 'BORRADOR',
-        usuario_id INTEGER,
-        FOREIGN KEY (usuario_id) REFERENCES usuario(id)
-      );
-      CREATE TABLE IF NOT EXISTS modulo (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        titulo TEXT NOT NULL,
-        orden INTEGER,
-        curso_id INTEGER,
-        FOREIGN KEY (curso_id) REFERENCES curso(id)
-      );
-      CREATE TABLE IF NOT EXISTS leccion (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        titulo TEXT NOT NULL,
-        contenido TEXT,
-        modulo_id INTEGER,
-        FOREIGN KEY (modulo_id) REFERENCES modulo(id)
-      );
-      CREATE TABLE IF NOT EXISTS like_curso (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        fecha TEXT,
-        usuario_id INTEGER,
-        curso_id INTEGER
-      );
-      CREATE TABLE IF NOT EXISTS inscripcion (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        fecha TEXT,
-        usuario_id INTEGER,
-        curso_id INTEGER
-      );
-      CREATE TABLE IF NOT EXISTS match_curso (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        fecha_confirmacion TEXT,
-        usuario1_id INTEGER,
-        usuario2_id INTEGER,
-        curso1_id INTEGER,
-        curso2_id INTEGER
-      );
-      
-    """;
-        try (var conn = DBConnection.getConnection();
-             var stmt = conn.createStatement()) {
-            for (String s : sql.split(";"))
-                if (!s.isBlank()) stmt.execute(s);
-            System.out.println("BD inicializada correctamente");
-        } catch (Exception e) { e.printStackTrace(); }
+        try {
+            System.out.println("=================================================");
+            System.out.println("Inicializando base de datos con Hibernat...");
+            System.out.println("=================================================");
+
+            // Inicializar SessionFactory de Hibernate
+            // Esto cargará hibernat.cfg.xml y creará/actualizará las tablas automáticamente
+            org.hibernate.SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
+
+            // Verificar que la conexión está activa
+            if (sessionFactory != null && !sessionFactory.isClosed()) {
+                System.out.println("✅ Base de datos inicializada correctamente");
+                System.out.println("✅ SessionFactory de Hibernat activo");
+                System.out.println("✅ Esquema de BD creado/actualizado automáticamente");
+                System.out.println("=================================================");
+            } else {
+                System.err.println("❌ Error: SessionFactory no está activo");
+            }
+
+        } catch (Exception e) {
+            System.err.println("❌ Error al inicializar la base de datos");
+            System.err.println("Mensaje: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }
