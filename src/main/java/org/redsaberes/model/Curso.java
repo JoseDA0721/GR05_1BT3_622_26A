@@ -3,7 +3,9 @@ package org.redsaberes.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "curso")
@@ -43,7 +45,7 @@ public class Curso {
     private List<Modulo> modulos = new ArrayList<>();
 
     @OneToMany(mappedBy = "curso", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private List<LikeCurso> likes = new ArrayList<>();
+    private Set<LikeCurso> likes = new HashSet<>();
 
     @OneToMany(mappedBy = "curso", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Inscripcion> inscripciones = new ArrayList<>();
@@ -141,11 +143,11 @@ public class Curso {
         this.modulos = modulos;
     }
 
-    public List<LikeCurso> getLikes() {
+    public Set<LikeCurso> getLikes() {
         return likes;
     }
 
-    public void setLikes(List<LikeCurso> likes) {
+    public void setLikes(Set<LikeCurso> likes) {
         this.likes = likes;
     }
 

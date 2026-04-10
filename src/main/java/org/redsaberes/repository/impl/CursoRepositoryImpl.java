@@ -138,7 +138,7 @@ public class CursoRepositoryImpl implements CursoRepository {
         Session session = sessionFactory.openSession();
         try {
             Query<Curso> query = session.createQuery(
-                "FROM Curso c " +
+                "SELECT DISTINCT c FROM Curso c " +
                 "LEFT JOIN FETCH c.modulos " +
                 "LEFT JOIN FETCH c.likes " +
                 "WHERE c.usuario.id = :usuarioId " +
@@ -157,18 +157,17 @@ public class CursoRepositoryImpl implements CursoRepository {
         Session session = sessionFactory.openSession();
         try {
             Query<Curso> query = session.createQuery(
-                "FROM Curso c " +
+                "SELECT DISTINCT c FROM Curso c " +
                 "LEFT JOIN FETCH c.modulos " +
                 "LEFT JOIN FETCH c.likes " +
                 "WHERE c.id = :id",
                 Curso.class
             );
             query.setParameter("id", id);
-            Curso curso = query.uniqueResult();
-            return Optional.ofNullable(curso);
+            List<Curso> results = query.getResultList();
+            return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
         } finally {
             session.close();
         }
     }
 }
-
