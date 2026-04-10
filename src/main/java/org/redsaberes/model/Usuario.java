@@ -18,7 +18,7 @@ public class Usuario {
     @NotBlank(message = "El nombre es requerido")
     private String nombre;
 
-    @Column(name = "correo", nullable = false, unique = true)
+    @Column(nullable = false, unique = true)
     @Email(message = "El correo debe ser válido")
     @NotBlank(message = "El correo es requerido")
     private String correoElectronico;
