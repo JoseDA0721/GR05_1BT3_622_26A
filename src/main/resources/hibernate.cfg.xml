@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC
+        "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+
+<hibernate-configuration>
+    <session-factory>
+        <!-- ===== CONFIGURACIÓN DE LA BASE DE DATOS ===== -->
+
+        <!-- SQLite Dialect (SQL específico para SQLite) -->
+        <!-- Nota: En Hibernate 6.x se usa org.hibernate.community.dialect.SQLiteDialect -->
+        <property name="hibernate.dialect">org.hibernate.community.dialect.SQLiteDialect</property>
+
+        <!-- Driver JDBC de SQLite -->
+        <property name="hibernate.connection.driver_class">org.sqlite.JDBC</property>
+
+        <!-- URL de conexión (ruta de la BD SQLite) -->
+        <!-- Usa ${user.home}/.redsaberes/redsaberes.db para almacenar en home del usuario -->
+        <property name="hibernate.connection.url">
+            jdbc:sqlite:${user.home}/.redsaberes/redsaberes.db
+        </property>
+
+        <!-- Pool de conexiones -->
+        <property name="hibernate.connection.pool_size">5</property>
+
+        <!-- ===== GENERACIÓN AUTOMÁTICA DEL ESQUEMA ===== -->
+
+        <!-- Crear/actualizar tablas automáticamente -->
+        <!-- update = crear si no existen, actualizar si existen (RECOMENDADO PARA DESARROLLO) -->
+        <!-- validate = solo validar sin cambiar (RECOMENDADO PARA PRODUCCIÓN) -->
+        <!-- create = crear nuevas (elimina datos existentes) -->
+        <!-- create-drop = crear al iniciar, eliminar al cerrar -->
+        <property name="hibernate.hbm2ddl.auto">update</property>
+
+        <!-- ===== CONFIGURACIÓN DE LOGGING Y DEBUG ===== -->
+
+        <!-- Mostrar SQL generado (solo en desarrollo) -->
+        <property name="hibernate.show_sql">true</property>
+
+        <!-- Formatear SQL para mejor legibilidad -->
+        <property name="hibernate.format_sql">true</property>
+
+        <!-- Agregar comentarios en SQL generado -->
+        <property name="hibernate.use_sql_comments">true</property>
+
+        <!-- ===== CONFIGURACIÓN AVANZADA ===== -->
+
+        <!-- Permitir lazy loading fuera de sesiones (cuidado: puede causar problemas) -->
+        <property name="hibernate.enable_lazy_load_no_trans">true</property>
+
+        <!-- Estadísticas de sesión (para debugging) -->
+        <property name="hibernate.generate_statistics">false</property>
+
+        <!-- ===== MAPEADO DE ENTIDADES ===== -->
+        <!-- Cada entidad con anotaciones @Entity debe estar aquí -->
+
+        <!-- Usuario -->
+        <mapping class="org.redsaberes.model.Usuario"/>
+
+        <!-- Curso y sus entidades relacionadas -->
+        <mapping class="org.redsaberes.model.Curso"/>
+        <mapping class="org.redsaberes.model.Modulo"/>
+        <mapping class="org.redsaberes.model.Leccion"/>
+
+        <!-- Likes, Inscripciones, Matches -->
+        <mapping class="org.redsaberes.model.LikeCurso"/>
+        <mapping class="org.redsaberes.model.Inscripcion"/>
+        <mapping class="org.redsaberes.model.MatchCurso"/>
+
+    </session-factory>
+</hibernate-configuration>
+

@@ -4,7 +4,23 @@
 
 ## 📋 Descripción
 
----
+**RedSaberes** es una plataforma educativa que permite a los usuarios crear, compartir y colaborar en cursos en línea. 
+
+### Características Principales
+- ✅ Autenticación de usuarios con contraseñas hasheadas (BCrypt)
+- ✅ Creación y gestión de cursos
+- ✅ Estructura de cursos en módulos y lecciones
+- ✅ Sistema de "like" y inscripciones
+- ✅ Recuperación de contraseña por correo electrónico
+- ✅ Base de datos SQLite con Hibernate ORM
+
+### Stack Tecnológico
+- **Backend**: Java 17 + Jakarta Servlets
+- **ORM**: Hibernate 6.4.0 Final
+- **Base de Datos**: SQLite con JPA/Annotations
+- **Build**: Apache Maven
+- **Servidor**: Apache Tomcat 10.1.x
+- **Vistas**: JSP + JSTL + Tailwind CSS
 
 ## 🛠️ Requisitos Previos
 
@@ -60,29 +76,64 @@ ls -Recurse src/
 
 ## ⚙️ Configuración Inicial
 
-### 1. Configurar la Base de Datos SQLite
+### 1. Configurar Hibernate y la Base de Datos SQLite
 
-#### Archivo: `src/main/resources/config.properties`
+#### Archivo: `src/main/resources/hibernate.cfg.xml`
 
 El archivo ya está configurado con:
-```properties
-db.path=${user.home}/.redsaberes/redsaberes.db
+```xml
+<!-- SQLite Dialect (Hibernate 6.x) -->
+<property name="hibernate.dialect">org.hibernate.community.dialect.SQLiteDialect</property>
+
+<!-- URL de conexión -->
+<property name="hibernate.connection.url">
+    jdbc:sqlite:${user.home}/.redsaberes/redsaberes.db
+</property>
+
+<!-- Estrategia de actualización del esquema -->
+<property name="hibernate.hbm2ddl.auto">update</property>
 ```
 
 **Ubicación automática de la BD:**
 - **Windows**: `C:\Users\{tu_usuario}\.redsaberes\redsaberes.db`
 - **Linux/Mac**: `/home/{tu_usuario}/.redsaberes/redsaberes.db`
 
+**Estrategias disponibles:**
+- `create`: Crea la BD desde cero (uso único inicial)
+- `update`: Actualiza automáticamente con cambios en entidades (DESARROLLO)
+- `validate`: Solo valida sin cambios (PRODUCCIÓN)
+
 ### 2. Verificar Dependencias Maven
 
 El archivo `pom.xml` incluye todas las dependencias necesarias:
 
 ```xml
+<!-- Hibernate ORM Core -->
+<dependency>
+    <groupId>org.hibernate.orm</groupId>
+    <artifactId>hibernate-core</artifactId>
+    <version>6.4.0.Final</version>
+</dependency>
+
+<!-- Hibernate Community Dialects (incluye SQLiteDialect) -->
+<dependency>
+    <groupId>org.hibernate.orm</groupId>
+    <artifactId>hibernate-community-dialects</artifactId>
+    <version>6.4.0.Final</version>
+</dependency>
+
 <!-- SQLite JDBC Driver -->
 <dependency>
     <groupId>org.xerial</groupId>
     <artifactId>sqlite-jdbc</artifactId>
     <version>3.51.1.0</version>
+</dependency>
+
+<!-- Jakarta Persistence API -->
+<dependency>
+    <groupId>jakarta.persistence</groupId>
+    <artifactId>jakarta.persistence-api</artifactId>
+    <version>3.1.0</version>
 </dependency>
 
 <!-- Jakarta Servlets API -->
@@ -98,14 +149,17 @@ El archivo `pom.xml` incluye todas las dependencias necesarias:
     <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
     <version>3.0.0</version>
 </dependency>
-<dependency>
-    <groupId>org.glassfish.web</groupId>
-    <artifactId>jakarta.servlet.jsp.jstl</artifactId>
-    <version>3.0.1</version>
-</dependency>
 ```
 
----
+### 3. Inicialización Automática de la Base de Datos
+
+**Archivo**: `src/main/java/org/redsaberes/util/AppInitListener.java`
+
+La aplicación inicializa automáticamente Hibernate al arrancar:
+1. Carga `hibernate.cfg.xml`
+2. Crea SessionFactory de Hibernate
+3. Genera/actualiza tablas según anotaciones @Entity
+4. Crea la carpeta `~/.redsaberes/` si no existe
 
 ## 🚀 Compilar y Ejecutar
 
@@ -158,18 +212,6 @@ http://localhost:8080/redsaberes/
 
 ---
 
-## 🔐 Credenciales de Prueba
-
-Una vez que despliegas la aplicación, puedes iniciar sesión con:
-
-```
-📧 Correo:      admin@redsaberes.com
-🔑 Contraseña:  admin123
-```
-
-> **Nota**: Estas credenciales son de demostración. En producción, debes cambiarlas.
-
----
 
 ## 📁 Estructura del Proyecto
 
@@ -179,101 +221,142 @@ RedSaberes/
 │   ├── main/
 │   │   ├── java/
 │   │   │   └── org/redsaberes/
-│   │   │       ├── dao/              # Data Access Objects (Base de datos)
+│   │   │       ├── repository/       # Repositories con Hibernate
+│   │   │       │   ├── UsuarioRepository.java
+│   │   │       │   ├── CursoRepository.java
+│   │   │       │   └── impl/         # Implementaciones
 │   │   │       ├── filter/           # Filtros de servlets
-│   │   │       ├── model/            # Modelos de datos
-│   │   │       │   ├── Usuario.java
-│   │   │       │   ├── Curso.java
-│   │   │       │   └── EstadoCurso.java
+│   │   │       ├── model/            # Entidades JPA
+│   │   │       │   ├── Usuario.java         (@Entity)
+│   │   │       │   ├── Curso.java           (@Entity)
+│   │   │       │   ├── Modulo.java          (@Entity)
+│   │   │       │   ├── Leccion.java         (@Entity)
+│   │   │       │   ├── LikeCurso.java       (@Entity)
+│   │   │       │   ├── Inscripcion.java     (@Entity)
+│   │   │       │   ├── MatchCurso.java      (@Entity)
+│   │   │       │   └── EstadoCurso.java     (Enum)
 │   │   │       ├── servlet/          # Controladores
 │   │   │       │   ├── LoginServlet.java
+│   │   │       │   ├── RegisterServlet.java
+│   │   │       │   ├── MyCoursesServlet.java
 │   │   │       │   └── DashboardServlet.java
 │   │   │       └── util/             # Utilidades
-│   │   │           ├── AppInitListener.java (Inicializa BD)
-│   │   │           ├── DBConnection.java
-│   │   │           └── DBInit.java
+│   │   │           ├── HibernateUtil.java    (SessionFactory Singleton)
+│   │   │           ├── AppInitListener.java  (Inicializa Hibernate)
+│   │   │           ├── DBConnection.java     (Legado)
+│   │   │           └── DBInit.java           (Legado)
 │   │   ├── resources/
-│   │   │   └── config.properties     # Configuración de BD
+│   │   │   ├── hibernate.cfg.xml     # ⭐ Configuración de Hibernate
+│   │   │   └── config.properties     # Configuración general
 │   │   └── webapp/
 │   │       ├── WEB-INF/
 │   │       │   ├── web.xml           # Configuración web
-│   │       │   └── views/            # Vistas reutilizables
+│   │       │   └── views/            # Vistas JSP
+│   │       │       └── inc1/
+│   │       │           ├── login.jsp
+│   │       │           ├── dashboard.jsp
+│   │       │           └── my-courses.jsp
 │   │       ├── css/
 │   │       │   └── styles.css
-│   │       ├── index.jsp             # Página de login
-│   │       └── dashboard.jsp         # Panel principal
+│   │       ├── js/
+│   │       └── index.jsp
 │   └── test/
 │       ├── java/                     # Tests unitarios
 │       └── resources/
 ├── target/                           # Artifacts compilados
-├── pom.xml                           # Dependencias Maven
+├── pom.xml                           # ⭐ Dependencias Maven
 ├── mvnw / mvnw.cmd                   # Maven Wrapper
+├── .gitignore                        # Archivos a ignorar en Git
 └── README.md                         # Este archivo
 ```
 
----
+### Componentes Clave
+
+**🔵 Entidades JPA** (`src/main/java/org/redsaberes/model/`)
+- Clases mapeadas con anotaciones `@Entity`
+- Gestionadas por Hibernate automáticamente
+- Relaciones: `@OneToMany`, `@ManyToOne`
+
+**🟢 Repositories** (`src/main/java/org/redsaberes/repository/`)
+- Interfaces que definen operaciones CRUD
+- Implementaciones con Hibernate
+- Métodos: `save()`, `findById()`, `findAll()`, `delete()`
+
+**🟡 Servlets** (`src/main/java/org/redsaberes/servlet/`)
+- Controladores que usan Repositories
+- Reemplazaron los DAOs heredados
+- Manejan requests HTTP
+
+**🟣 Utilidades** (`src/main/java/org/redsaberes/util/`)
+- `HibernateUtil`: Singleton de SessionFactory
+- `AppInitListener`: Inicializa Hibernate al arrancar
+- `DBInit`: (Legado) Ahora solo valida schemas
 
 ## 🗄️ Base de Datos
 
-### Tablas Principales
+### Configuración con Hibernate
 
-**usuario**
-```sql
-id                INTEGER PRIMARY KEY AUTOINCREMENT
-nombre            TEXT NOT NULL
-correo            TEXT UNIQUE NOT NULL
-contrasena        TEXT NOT NULL
-token_sesion      TEXT
+La base de datos se gestiona completamente con **Hibernate ORM**:
+- ✅ Tablas creadas automáticamente según anotaciones `@Entity`
+- ✅ Relaciones mapeadas con `@OneToMany`, `@ManyToOne`
+- ✅ Updates automáticos del esquema en desarrollo
+
+### Entidades Principales
+
+**Usuario** (`@Entity`)
+```java
+@Entity
+@Table(name = "usuario")
+public class Usuario {
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+    
+    @Column(nullable = false, unique = true)
+    private String correoElectronico;
+    
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
+    private List<Curso> cursos;
+}
 ```
 
-**curso**
-```sql
-id                INTEGER PRIMARY KEY AUTOINCREMENT
-titulo            TEXT NOT NULL
-descripcion       TEXT
-categoria         TEXT
-nivel_dificultad  TEXT
-imagen_portada    TEXT
-estado            TEXT DEFAULT 'BORRADOR'
-usuario_id        INTEGER (FK → usuario.id)
+**Curso** (`@Entity`)
+```java
+@Entity
+@Table(name = "curso")
+public class Curso {
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+    
+    @Column(nullable = false)
+    private String titulo;
+    
+    @ManyToOne
+    @JoinColumn(name = "usuario_id", nullable = false)
+    private Usuario usuario;
+    
+    @OneToMany(mappedBy = "curso", cascade = CascadeType.ALL)
+    private List<Modulo> modulos;
+}
 ```
 
-**modulo**
-```sql
-id                INTEGER PRIMARY KEY AUTOINCREMENT
-titulo            TEXT NOT NULL
-orden             INTEGER
-curso_id          INTEGER (FK → curso.id)
-```
+### Relaciones Principales
 
-**leccion**
-```sql
-id                INTEGER PRIMARY KEY AUTOINCREMENT
-titulo            TEXT NOT NULL
-contenido         TEXT
-modulo_id         INTEGER (FK → modulo.id)
 ```
+Usuario (1) ─── (N) Curso
+Usuario (1) ─── (N) Inscripcion ─── (N) Curso
+Usuario (1) ─── (N) LikeCurso ─── (N) Curso
 
-**inscripcion**
-```sql
-id                INTEGER PRIMARY KEY AUTOINCREMENT
-fecha             TEXT
-usuario_id        INTEGER (FK → usuario.id)
-curso_id          INTEGER (FK → curso.id)
-```
-
-**like_curso**
-```sql
-id                INTEGER PRIMARY KEY AUTOINCREMENT
-fecha             TEXT
-usuario_id        INTEGER (FK → usuario.id)
-curso_id          INTEGER (FK → curso.id)
+Curso (1) ─── (N) Modulo
+Modulo (1) ─── (N) Leccion
 ```
 
 ### Inicialización Automática
 
-La base de datos se crea automáticamente al iniciar la aplicación. 
-El archivo `AppInitListener.java` ejecuta `DBInit.java` que crea todas las tablas.
+La base de datos se crea/actualiza automáticamente:
+1. **Al arrancar Tomcat**: `AppInitListener` inicia Hibernate
+2. **Al cargar Hibernate**: Lee `hibernate.cfg.xml`
+3. **Al crear SessionFactory**: Genera/actualiza tablas
+4. **Sin intervención manual**: Todo es automático ✅
 
 ---
 
@@ -316,9 +399,12 @@ El archivo `AppInitListener.java` ejecuta `DBInit.java` que crea todas las tabla
 | **Maven** | 3.8.0+   | Gestor de dependencias |
 | **Apache Tomcat** | 10.1.x+  | Servidor web/aplicaciones |
 | **SQLite** | 3.51.1.0 | Base de datos |
+| **Hibernate ORM** | 6.4.0    | Framework ORM |
+| **Jakarta Persistence (JPA)** | 3.1.0    | Estándar de persistencia |
 | **Jakarta Servlets** | 6.1.0    | Framework web |
 | **JSTL** | 3.0.1    | Librería de tags JSP |
 | **JSP** | Latest   | Vistas dinámicas |
+| **BCrypt** | 0.4      | Hash de contraseñas |
 
 
 ---
