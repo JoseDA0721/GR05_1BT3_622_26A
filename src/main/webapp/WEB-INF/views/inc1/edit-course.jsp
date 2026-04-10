@@ -203,13 +203,24 @@
         <!-- Columna derecha: lista de módulos existentes -->
         <div class="lg:col-span-2">
             <div class="flex items-center justify-between mb-4">
-                <h2 class="text-lg font-bold text-gray-900">
-                    Módulos del curso
-                    <span class="ml-2 px-2 py-0.5 bg-indigo-100 text-indigo-700
-                                 text-xs font-semibold rounded-full">
+                <div class="flex items-center gap-3">
+                    <h2 class="text-lg font-bold text-gray-900">
+                        Módulos del curso
+                    </h2>
+                    <span class="px-2 py-0.5 bg-indigo-100 text-indigo-700 text-xs font-semibold rounded-full">
                         ${modulos.size()}
                     </span>
-                </h2>
+                </div>
+                <%-- Enlace a la gestion de modulos (edit/delete/reorder) --%>
+                <c:if test="${not empty modulos}">
+                    <a href="${pageContext.request.contextPath}/edit-course?action=reorder&cursoId=${curso.id}"
+                       class="flex items-center gap-2 px-3 py-1.5 bg-white border border-indigo-200
+                      text-indigo-600 rounded-lg text-xs font-bold hover:bg-indigo-50
+                      transition-all hover:shadow-sm">
+                        <i data-lucide="settings-2" class="w-3.5 h-3.5"></i>
+                        Gestionar Modulos
+                    </a>
+                </c:if>
             </div>
 
             <!-- Estado vacío -->

@@ -89,7 +89,7 @@ public class ModuloRepositoryImpl implements ModuloRepository {
         Session session = sessionFactory.openSession();
         try {
             Query<Modulo> query = session.createQuery(
-                "FROM Modulo m WHERE m.curso.id = :cursoId ORDER BY m.orden",
+                "FROM Modulo m WHERE m.curso.id = :cursoId ORDER BY m.orden ASC",
                 Modulo.class
             );
             query.setParameter("cursoId", cursoId);
