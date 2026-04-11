@@ -432,6 +432,15 @@ public class ModuloServlet extends HttpServlet {
             case "orden-vacio":
                 req.setAttribute("error", "No se recibio ningun modulo para reordenar.");
                 break;
+            case "sin-contenido":
+                req.setAttribute("error",
+                        "El curso necesita al menos un módulo " +
+                                "con una lección para publicarse.");
+                break;
+            case "ya-publicado":
+                req.setAttribute("exito",
+                        "Este curso ya está publicado.");
+                break;
             default:
                 break;
         }

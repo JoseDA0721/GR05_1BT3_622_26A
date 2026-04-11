@@ -58,13 +58,13 @@ public class CursoServlet extends HttpServlet {
 
         if (titulo == null || titulo.trim().isEmpty() || descripcion == null || descripcion.trim().isEmpty()){
             request.setAttribute("error", "El título y la descripción son obligatorios.");
-            request.getRequestDispatcher("/WEB-INF/views/create-course.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/inc1/create-course.jsp").forward(request, response);
             return;
         }
 
         if (titulo.length() > 100){
             request.setAttribute("error", "El título no puede exceder los 100 caracteres.");
-            request.getRequestDispatcher("/WEB-INF/views/create-course.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/inc1/create-course.jsp").forward(request, response);
             return;
         }
 
@@ -96,7 +96,7 @@ public class CursoServlet extends HttpServlet {
             e.printStackTrace();
             request.setAttribute("error", "Error al crear el curso."
             + e.getMessage());
-            request.getRequestDispatcher("/WEB-INF/views/create-course.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/inc1/create-course.jsp").forward(request, response);
         }
     }
 }

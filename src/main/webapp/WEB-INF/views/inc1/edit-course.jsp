@@ -334,13 +334,19 @@
                                 Enlace al CU-07 PublicarServlet
                                 Se implementa en el siguiente caso de uso
                             -->
-                            <a href="${pageContext.request.contextPath}/publicar?id=${curso.id}"
-                               class="inline-flex items-center gap-2 px-6 py-2.5
-                                      bg-gradient-brand text-white rounded-lg
-                                      font-semibold hover:shadow-lg transition text-sm">
-                                <i data-lucide="send" class="w-4 h-4"></i>
-                                Publicar curso
-                            </a>
+                            <form method="post"
+                                  action="${pageContext.request.contextPath}/publicar">
+                                <input type="hidden"
+                                       name="cursoId"
+                                       value="${curso.id}" />
+                                <button type="submit"
+                                        class="inline-flex items-center gap-2px-6 py-2.5
+                                        bg-gradient-brandtext-white rounded-lg
+                                        font-semiboldhover:shadow-lg transition text-sm">
+                                    <i data-lucide="send" class="w-4 h-4"></i>
+                                    Publicar curso
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>
