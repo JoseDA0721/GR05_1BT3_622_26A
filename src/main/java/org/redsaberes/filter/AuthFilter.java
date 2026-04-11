@@ -8,10 +8,21 @@ import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 
-@WebFilter({"/dashboard", "/curso/*",
-        "/modulo/*", "/publicar/*",
-        "/miscursos", "/like/*",
-        "/match/*", "/inscripcion/*"})
+@WebFilter({
+        "/dashboard",
+        "/create-course",
+        "/edit-course",
+        "/publicar",
+        "/archive-course",
+        "/my-courses",
+        "/curso/*",
+        "/modulo/*",
+        "/publicar/*",
+        "/miscursos",
+        "/like/*",
+        "/match/*",
+        "/inscripcion/*"
+})
 public class AuthFilter implements Filter {
 
     @Override

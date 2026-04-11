@@ -13,5 +13,7 @@ public interface ModuloRepository {
     List<Modulo> findAll();
     List<Modulo> findByCursoId(Integer cursoId);
     List<Modulo> findByCursoIdWithLecciones(Integer cursoId);
+
+
 }
 
