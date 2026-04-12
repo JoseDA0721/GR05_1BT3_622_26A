@@ -12,6 +12,9 @@ public interface LikeCursoRepository {
     List<LikeCurso> findAll();
     List<LikeCurso> findByCursoId(Integer cursoId);
     List<LikeCurso> findByUsuarioId(Integer usuarioId);
+    List<LikeCurso> findByCursoPropietarioId(Integer propietarioId);
+    boolean existsByUsuarioAndCurso(Integer usuarioId, Integer cursoId);
     Long countByCursoId(Integer cursoId);
+    Long countByCursoPropietarioId(Integer propietarioId);
 }
 

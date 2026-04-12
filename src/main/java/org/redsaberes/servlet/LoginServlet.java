@@ -20,7 +20,7 @@ public class LoginServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try{
-            request.getRequestDispatcher("/WEB-INF/views/inc1/login.jsp").forward(request, response);
+            request.getRequestDispatcher("/login.jsp").forward(request, response);
         } catch(Exception e){
             e.printStackTrace();
         }
@@ -41,14 +41,14 @@ public class LoginServlet extends HttpServlet {
             //Validar campos completos
             if(correo == null || correo.isEmpty() || contrasena == null || contrasena.isEmpty()){
                 request.setAttribute("error", "Todos los campos son obligatorios");
-                request.getRequestDispatcher("/WEB-INF/views/inc1/login.jsp").forward(request, response);
+                request.getRequestDispatcher("/login.jsp").forward(request, response);
                 return;
             }
 
             //Validar formato de correo
             if(!isValidEmail(correo)){
                 request.setAttribute("error", "Formato de correo inválido");
-                request.getRequestDispatcher("/WEB-INF/views/inc1/login.jsp").forward(request, response);
+                request.getRequestDispatcher("/login.jsp").forward(request, response);
                 return;
             }
 
@@ -84,18 +84,18 @@ public class LoginServlet extends HttpServlet {
                 } else {
                     //Contraseña incorrecta
                     request.setAttribute("error", "Correo o contraseña incorrectos");
-                    request.getRequestDispatcher("/WEB-INF/views/inc1/login.jsp").forward(request, response);
+                    request.getRequestDispatcher("/login.jsp").forward(request, response);
                 }
             } else {
                 //Usuario no encontrado
                 request.setAttribute("error", "Correo o contraseña incorrectos");
-                request.getRequestDispatcher("/WEB-INF/views/inc1/login.jsp").forward(request, response);
+                request.getRequestDispatcher("/login.jsp").forward(request, response);
             }
 
         }catch(Exception e){
             e.printStackTrace();
             request.setAttribute("error", "Error del servidor");
-            request.getRequestDispatcher("/WEB-INF/views/inc1/login.jsp").forward(request, response);
+            request.getRequestDispatcher("/login.jsp").forward(request, response);
         }
 
     }

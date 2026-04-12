@@ -1,5 +1,7 @@
 package org.redsaberes.util;
 
+import java.io.File;
+
 /**
  * Inicialización de la base de datos
  * Con Hibernate, las tablas se crean automáticamente basadas en las anotaciones @Entity
@@ -11,6 +13,10 @@ public class DBInit {
             System.out.println("=================================================");
             System.out.println("Inicializando base de datos con Hibernat...");
             System.out.println("=================================================");
+
+            String dbPath = resolveDbPath();
+            System.setProperty("redsaberes.db.path", dbPath);
+            System.out.println("Ruta SQLite: " + dbPath);
 
             // Inicializar SessionFactory de Hibernate
             // Esto cargará hibernat.cfg.xml y creará/actualizará las tablas automáticamente
@@ -31,5 +37,24 @@ public class DBInit {
             System.err.println("Mensaje: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    private static String resolveDbPath() {
+        String baseDir = System.getenv("LOCALAPPDATA");
+        if (baseDir == null || baseDir.trim().isEmpty()) {
+            String catalinaBase = System.getProperty("catalina.base");
+            if (catalinaBase != null && !catalinaBase.trim().isEmpty()) {
+                baseDir = catalinaBase;
+            } else {
+                baseDir = System.getProperty("user.home");
+            }
+        }
+
+        File folder = new File(baseDir, "RedSaberes");
+        if (!folder.exists() && !folder.mkdirs()) {
+            throw new IllegalStateException("No se pudo crear directorio de BD: " + folder.getAbsolutePath());
+        }
+
+        return new File(folder, "redsaberes.db").getAbsolutePath();
     }
 }

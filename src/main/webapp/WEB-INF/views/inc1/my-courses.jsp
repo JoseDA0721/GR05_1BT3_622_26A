@@ -217,6 +217,12 @@
                                     <span class="text-sm font-semibold">Editar</span>
                                 </a>
 
+                                <a href="${pageContext.request.contextPath}/matches?cursoId=${course.id}"
+                                   class="flex items-center justify-center px-3 py-2 bg-pink-50 text-pink-600 rounded-lg hover:bg-pink-100 transition"
+                                   title="Ver likes del curso">
+                                    <i data-lucide="heart" class="w-4 h-4"></i>
+                                </a>
+
                                 <a href="${pageContext.request.contextPath}/view-course?id=${course.id}"
                                    class="flex items-center justify-center w-10 h-10 bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100 transition"
                                    title="Ver curso">
