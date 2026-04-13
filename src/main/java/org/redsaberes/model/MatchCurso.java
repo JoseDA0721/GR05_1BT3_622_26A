@@ -3,7 +3,10 @@ package org.redsaberes.model;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "match_curso")
+@Table(
+    name = "match_curso",
+    uniqueConstraints = @UniqueConstraint(columnNames = {"curso_id", "estudiante_id"})
+)
 public class MatchCurso {
 
     @Id
@@ -13,36 +16,28 @@ public class MatchCurso {
     @Column(name = "fecha_confirmacion")
     private String fechaConfirmacion;
 
-    // ===== RELACIONES =====
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "curso_id", nullable = false)
+    private Curso curso;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usuario1_id")
-    private Usuario usuario1;
+    @JoinColumn(name = "estudiante_id", nullable = false)
+    private Usuario estudiante;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usuario2_id")
-    private Usuario usuario2;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "curso1_id")
-    private Curso curso1;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "curso2_id")
-    private Curso curso2;
+    @JoinColumn(name = "creador_id", nullable = false)
+    private Usuario creador;
 
     // Constructores
     public MatchCurso() {
     }
 
-    public MatchCurso(Integer id, String fechaConfirmacion, Usuario usuario1,
-                     Usuario usuario2, Curso curso1, Curso curso2) {
+    public MatchCurso(Integer id, String fechaConfirmacion, Curso curso, Usuario estudiante, Usuario creador) {
         this.id = id;
         this.fechaConfirmacion = fechaConfirmacion;
-        this.usuario1 = usuario1;
-        this.usuario2 = usuario2;
-        this.curso1 = curso1;
-        this.curso2 = curso2;
+        this.curso = curso;
+        this.estudiante = estudiante;
+        this.creador = creador;
     }
 
     // Getters y Setters
@@ -62,36 +57,28 @@ public class MatchCurso {
         this.fechaConfirmacion = fechaConfirmacion;
     }
 
-    public Usuario getUsuario1() {
-        return usuario1;
+    public Curso getCurso() {
+        return curso;
     }
 
-    public void setUsuario1(Usuario usuario1) {
-        this.usuario1 = usuario1;
+    public void setCurso(Curso curso) {
+        this.curso = curso;
     }
 
-    public Usuario getUsuario2() {
-        return usuario2;
+    public Usuario getEstudiante() {
+        return estudiante;
     }
 
-    public void setUsuario2(Usuario usuario2) {
-        this.usuario2 = usuario2;
+    public void setEstudiante(Usuario estudiante) {
+        this.estudiante = estudiante;
     }
 
-    public Curso getCurso1() {
-        return curso1;
+    public Usuario getCreador() {
+        return creador;
     }
 
-    public void setCurso1(Curso curso1) {
-        this.curso1 = curso1;
-    }
-
-    public Curso getCurso2() {
-        return curso2;
-    }
-
-    public void setCurso2(Curso curso2) {
-        this.curso2 = curso2;
+    public void setCreador(Usuario creador) {
+        this.creador = creador;
     }
 }
 
