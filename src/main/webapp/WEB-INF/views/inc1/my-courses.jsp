@@ -31,7 +31,7 @@
             background-clip: text;
         }
 
-        /* AnimaciÃ³n de fade in */
+        /* Animación de fade in */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -73,8 +73,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
 
-            <!-- Logo y NavegaciÃ³n -->
-            <div class="flex items-center gap-8">
+            <!-- Logo y Navegación -->            <div class="flex items-center gap-8">
                 <a href="${pageContext.request.contextPath}/dashboard" class="flex items-center gap-2">
                     <div class="w-10 h-10 bg-gradient-brand rounded-xl flex items-center justify-center">
                         <i data-lucide="book-open" class="w-6 h-6 text-white"></i>
@@ -110,8 +109,7 @@
                 </div>
                 <a href="${pageContext.request.contextPath}/logout"
                    class="p-2 text-gray-600 hover:text-red-600 transition-colors"
-                   title="Cerrar sesiÃ³n">
-                    <i data-lucide="log-out" class="w-5 h-5"></i>
+                   title="Cerrar sesión">                    <i data-lucide="log-out" class="w-5 h-5"></i>
                 </a>
             </div>
         </div>
@@ -140,12 +138,11 @@
             <i data-lucide="check-circle-2" class="w-5 h-5 flex-shrink-0"></i>
             <p class="text-sm">
                 <c:choose>
-                    <c:when test="${param.success == 'created'}">Â¡Curso creado exitosamente!</c:when>
-                    <c:when test="${param.success == 'published'}">Â¡Curso publicado exitosamente!</c:when>
+                    <c:when test="${param.success == 'created'}">¡Curso creado exitosamente!</c:when>
+                    <c:when test="${param.success == 'published'}">¡Curso publicado exitosamente!</c:when>
                     <c:when test="${param.success == 'archived'}">Curso archivado correctamente.</c:when>
                     <c:when test="${param.success == 'deleted'}">Curso eliminado correctamente.</c:when>
-                    <c:otherwise>OperaciÃ³n exitosa.</c:otherwise>
-                </c:choose>
+                    <c:otherwise>Operación exitosa.</c:otherwise>                </c:choose>
             </p>
         </div>
     </c:if>
@@ -196,8 +193,7 @@
                             <!-- Stats Grid -->
                             <div class="grid grid-cols-3 gap-4 mb-4 text-sm">
                                 <div class="text-center">
-                                    <div class="text-gray-500">MÃ³dulos</div>
-                                    <div class="font-semibold text-gray-900">${course.modulosCount}</div>
+                                    <div class="text-gray-500">Módulos</div>                                    <div class="font-semibold text-gray-900">${course.modulosCount}</div>
                                 </div>
                                 <div class="text-center">
                                     <div class="text-gray-500">Likes</div>
@@ -250,7 +246,7 @@
                 <h3 class="text-2xl font-bold text-gray-900 mb-3">No tienes cursos creados</h3>
                 <p class="text-gray-600 mb-8 max-w-md mx-auto">
                     Comienza a compartir tu conocimiento creando tu primer curso.
-                    Es fÃ¡cil y rÃ¡pido.
+                    Es fácil y rápido.
                 </p>
                 <a href="${pageContext.request.contextPath}/create-course"
                    class="inline-flex items-center gap-2 px-8 py-4 bg-gradient-brand text-white rounded-lg font-semibold hover:shadow-xl transition text-lg">
@@ -289,9 +285,9 @@
     // Inicializar Lucide Icons
     lucide.createIcons();
 
-    // FunciÃ³n para archivar curso
+    // Funcion para archivar curso
     function archiveCourse(courseId) {
-        if (confirm('Estas seguro de que deseas archivar este curso? Los estudiantes ya inscritos podran continuar viendolo.')) {
+        if (confirm('¿Estás seguro de que deseas archivar este curso? Los estudiantes ya inscritos podrán continuar viéndolo.')) {
             window.location.href = '${pageContext.request.contextPath}/archive-course?id=' + courseId;
         }
     }
