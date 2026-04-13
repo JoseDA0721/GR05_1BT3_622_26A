@@ -15,9 +15,9 @@
         <property name="hibernate.connection.driver_class">org.sqlite.JDBC</property>
 
         <!-- URL de conexión (ruta de la BD SQLite) -->
-        <!-- Se resuelve desde la propiedad de sistema redsaberes.db.path (definida en DBInit) -->
+        <!-- Usa ${user.home}/.redsaberes/redsaberes.db para almacenar en home del usuario -->
         <property name="hibernate.connection.url">
-            jdbc:sqlite:${redsaberes.db.path}
+            jdbc:sqlite:${user.home}/.redsaberes/redsaberes.db
         </property>
 
         <!-- Pool de conexiones -->
@@ -69,4 +69,3 @@
 
     </session-factory>
 </hibernate-configuration>
-

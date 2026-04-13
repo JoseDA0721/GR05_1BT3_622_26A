@@ -66,7 +66,7 @@ public class PublicarServlet extends HttpServlet {
             if(curso.getEstado() == EstadoCurso.PUBLICO){
                 response.sendRedirect(
                         request.getContextPath()
-                        + "/edit-course?id" + cursoId
+                        + "/edit-course?id=" + cursoId
                         + "&msg=ya-publicado"
                 );
                 return;
@@ -82,7 +82,7 @@ public class PublicarServlet extends HttpServlet {
             if(!tieneContenido){
                 response.sendRedirect(
                         request.getContextPath()
-                        + "/edit-course?id" + cursoId
+                        + "/edit-course?id=" + cursoId
                         + "&msg=sin-contenido"
                 );
                 return;
