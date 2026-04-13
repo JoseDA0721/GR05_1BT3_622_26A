@@ -33,7 +33,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
             <div class="flex items-center gap-8">
-                <a href="/dashboard" class="flex items-center gap-2">
+                <a href="${pageContext.request.contextPath}/dashboard" class="flex items-center gap-2">
                     <div class="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
@@ -44,16 +44,16 @@
                         </span>
                 </a>
                 <div class="hidden md:flex items-center gap-6">
-                    <a href="/dashboard" class="text-gray-700 hover:text-indigo-600 transition-colors">
+                    <a href="${pageContext.request.contextPath}/dashboard" class="text-gray-700 hover:text-indigo-600 transition-colors">
                         Dashboard
                     </a>
-                    <a href="/explore" class="text-gray-700 hover:text-indigo-600 transition-colors">
+                    <a href="${pageContext.request.contextPath}/explore" class="text-gray-700 hover:text-indigo-600 transition-colors">
                         Explorar
                     </a>
-                    <a href="/my-courses" class="text-gray-700 hover:text-indigo-600 transition-colors">
+                    <a href="${pageContext.request.contextPath}/my-courses" class="text-gray-700 hover:text-indigo-600 transition-colors">
                         Mis Cursos
                     </a>
-                    <a href="/matches" class="text-indigo-600 font-semibold border-b-2 border-indigo-600 pb-1">
+                    <a href="${pageContext.request.contextPath}/matches" class="text-indigo-600 font-semibold border-b-2 border-indigo-600 pb-1">
                         Matches
                     </a>
                 </div>
@@ -61,10 +61,10 @@
             <div class="flex items-center gap-4">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold">
-                        ${sessionScope.user.name.substring(0,1)}
+                        ${sessionScope.usuario.nombre.substring(0,1)}
                     </div>
                 </div>
-                <a href="/logout" class="p-2 text-gray-600 hover:text-red-600 transition-colors" title="Cerrar sesión">
+                <a href="${pageContext.request.contextPath}/logout" class="p-2 text-gray-600 hover:text-red-600 transition-colors" title="Cerrar sesión">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                     </svg>
@@ -125,12 +125,11 @@
                         </c:when>
                         <c:otherwise>
                             <c:forEach var="person" items="${interested}">
-                                <div class="flex items-center gap-6 p-6 bg-gray-50 rounded-xl hover:bg-gray-100 transition" id="interested-${person.id}">
+                                <div class="flex items-center gap-6 p-6 bg-gray-50 rounded-xl hover:bg-gray-100 transition" id="interested-${person.userId}">
                                     <img
-                                            src="${person.image}"
+                                            src="https://ui-avatars.com/api/?name=${person.name}&background=6366f1&color=fff"
                                             alt="${person.name}"
                                             class="w-16 h-16 rounded-full object-cover"
-                                            onerror="this.src='https://ui-avatars.com/api/?name=${person.name}&background=6366f1&color=fff'"
                                     />
                                     <div class="flex-1">
                                         <h3 class="font-semibold text-gray-900 mb-1">${person.name}</h3>
@@ -140,13 +139,13 @@
                                             <span class="font-medium text-indigo-600">${person.myCourse}</span>
                                         </div>
                                         <div class="flex items-center gap-2 text-sm">
-                                            <span class="text-gray-600">Su curso:</span>
-                                            <span class="font-medium text-purple-600">${person.course}</span>
+                                            <span class="text-gray-600">Estado:</span>
+                                            <span class="font-medium text-purple-600">Pendiente de confirmacion</span>
                                         </div>
                                     </div>
                                     <div class="flex gap-2">
                                         <button
-                                                onclick="acceptMatch(${person.id})"
+                                                onclick="acceptMatch(${person.userId}, ${person.myCourseId})"
                                                 class="px-6 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:shadow-lg transition flex items-center gap-2"
                                         >
                                             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -155,7 +154,7 @@
                                             <span>Aceptar Match</span>
                                         </button>
                                         <button
-                                                onclick="rejectInterest(${person.id})"
+                                                onclick="rejectInterest(${person.userId})"
                                                 class="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition"
                                         >
                                             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -186,10 +185,9 @@
                             <c:forEach var="match" items="${matches}">
                                 <div class="flex items-center gap-6 p-6 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl">
                                     <img
-                                            src="${match.image}"
+                                            src="https://ui-avatars.com/api/?name=${match.name}&background=6366f1&color=fff"
                                             alt="${match.name}"
                                             class="w-16 h-16 rounded-full object-cover"
-                                            onerror="this.src='https://ui-avatars.com/api/?name=${match.name}&background=6366f1&color=fff'"
                                     />
                                     <div class="flex-1">
                                         <h3 class="font-semibold text-gray-900 mb-1">${match.name}</h3>
@@ -204,7 +202,7 @@
                                         </div>
                                     </div>
                                     <a
-                                            href="/course/${match.courseId}"
+                                            href="${pageContext.request.contextPath}/course-material?id=${match.courseId}"
                                             class="px-6 py-2 bg-white text-indigo-600 rounded-lg hover:shadow-lg transition font-semibold"
                                     >
                                         Ver Curso →
@@ -237,48 +235,35 @@
         document.getElementById('content-' + tabName).classList.add('active');
     }
 
-    function acceptMatch(personId) {
-        // Aquí harías una llamada AJAX al servidor
-        fetch('/api/matches/accept', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ personId: personId })
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Remover de la lista de interesados
-                    document.getElementById('interested-' + personId).remove();
+    function acceptMatch(personId, courseId) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '${pageContext.request.contextPath}/accept-match';
 
-                    // Actualizar contador
-                    const count = parseInt(document.getElementById('interested-count').textContent) - 1;
-                    document.getElementById('interested-count').textContent = count;
+        const courseInput = document.createElement('input');
+        courseInput.type = 'hidden';
+        courseInput.name = 'cursoId';
+        courseInput.value = courseId;
+        form.appendChild(courseInput);
 
-                    const matchCount = parseInt(document.getElementById('matches-count').textContent) + 1;
-                    document.getElementById('matches-count').textContent = matchCount;
+        const userInput = document.createElement('input');
+        userInput.type = 'hidden';
+        userInput.name = 'usuarioObjetivoId';
+        userInput.value = personId;
+        form.appendChild(userInput);
 
-                    // Mostrar mensaje de éxito
-                    alert('¡Match aceptado exitosamente!');
-                }
-            });
+        document.body.appendChild(form);
+        form.submit();
     }
 
     function rejectInterest(personId) {
         if (confirm('¿Estás seguro de que quieres rechazar este interés?')) {
-            fetch('/api/matches/reject', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ personId: personId })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        document.getElementById('interested-' + personId).remove();
-
-                        const count = parseInt(document.getElementById('interested-count').textContent) - 1;
-                        document.getElementById('interested-count').textContent = count;
-                    }
-                });
+            const row = document.getElementById('interested-' + personId);
+            if (row) {
+                row.remove();
+                const count = parseInt(document.getElementById('interested-count').textContent) - 1;
+                document.getElementById('interested-count').textContent = Math.max(0, count);
+            }
         }
     }
 </script>

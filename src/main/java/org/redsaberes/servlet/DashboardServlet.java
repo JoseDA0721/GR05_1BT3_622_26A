@@ -9,7 +9,11 @@ import jakarta.servlet.http.HttpSession;
 import org.redsaberes.model.Curso;
 import org.redsaberes.model.Usuario;
 import org.redsaberes.repository.CursoRepository;
+import org.redsaberes.repository.LikeCursoRepository;
+import org.redsaberes.repository.MatchCursoRepository;
 import org.redsaberes.repository.impl.CursoRepositoryImpl;
+import org.redsaberes.repository.impl.LikeCursoRepositoryImpl;
+import org.redsaberes.repository.impl.MatchCursoRepositoryImpl;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,6 +25,8 @@ import java.util.Map;
 public class DashboardServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private final CursoRepository cursoRepository = new CursoRepositoryImpl();
+    private final LikeCursoRepository likeCursoRepository = new LikeCursoRepositoryImpl();
+    private final MatchCursoRepository matchCursoRepository = new MatchCursoRepositoryImpl();
 
     @Override
     protected void doGet(HttpServletRequest request,
@@ -40,8 +46,8 @@ public class DashboardServlet extends HttpServlet {
 
             Map<String, Object> dashboardStats = new HashMap<>();
             dashboardStats.put("coursesCreated", cursos.size());
-            dashboardStats.put("likesReceived", 0);     // Se puede optimizar después con query agregada.
-            dashboardStats.put("activeMatches", 0);
+            dashboardStats.put("likesReceived", safeLong(likeCursoRepository.countByCursoPropietarioId(usuario.getId())));
+            dashboardStats.put("activeMatches", safeLong(matchCursoRepository.countByCreadorId(usuario.getId())));
             dashboardStats.put("enrolledCourses", 0);
 
             // Adaptador ligero para mantener compatibilidad con dashboard.jsp actual.
@@ -53,8 +59,8 @@ public class DashboardServlet extends HttpServlet {
                 item.put("imageUrl", c.getImagenPortada());
                 item.put("status", c.getEstado() != null ? c.getEstado().name() : "BORRADOR");
                 item.put("authorName", usuario.getNombre());
-                item.put("likesCount", 0);
-                item.put("matchesCount", 0);
+                item.put("likesCount", safeLong(likeCursoRepository.countByCursoId(c.getId())));
+                item.put("matchesCount", safeLong(matchCursoRepository.countByCursoId(c.getId())));
                 userCourses.add(item);
             }
 
@@ -67,5 +73,9 @@ public class DashboardServlet extends HttpServlet {
             e.printStackTrace();
             response.sendRedirect(request.getContextPath() + "/login?error=1");
         }
+    }
+
+    private long safeLong(Long value) {
+        return value == null ? 0L : value;
     }
 }

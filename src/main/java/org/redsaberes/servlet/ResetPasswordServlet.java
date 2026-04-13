@@ -49,21 +49,21 @@ public class ResetPasswordServlet extends HttpServlet {
             || confirmarContraseña == null || confirmarContraseña.trim().isEmpty())
             {
                 request.setAttribute("error", "Todos los campos son obligatorios");
-                request.getRequestDispatcher("/WEB-INF/views/inc1/reset-password.jsp?token=" + token).forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/views/inc1/reset-password.jsp").forward(request, response);
                 return;
             }
 
             //Validar que las contraseñas coincidan
             if (!confirmarContraseña.equals(contrasena)) {
                 request.setAttribute("error", "Las contraseñas no coinciden");
-                request.getRequestDispatcher("/WEB-INF/views/inc1/reset-password.jsp?token=" + token).forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/views/inc1/reset-password.jsp").forward(request, response);
                 return;
             }
 
             //Validar longitud de contraseña
             if (contrasena.length() < 6) {
                 request.setAttribute("error", "Las contraseña debe tener al menos 6 caracteres");
-                request.getRequestDispatcher("/WEB-INF/views/inc1/reset-password.jsp?token=" + token).forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/views/inc1/reset-password.jsp").forward(request, response);
                 return;
             }
 
@@ -71,7 +71,7 @@ public class ResetPasswordServlet extends HttpServlet {
             Optional<Usuario> usuarioOpt = usuarioRepository.findByTokenRecuperacion(token);
             if (!usuarioOpt.isPresent()) {
                 request.setAttribute("error", "El enlace de recuperación no es válido o ha expirado");
-                request.getRequestDispatcher("/WEB-INF/views/inc1/reset-password.jsp?token=" + token).forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/views/inc1/reset-password.jsp").forward(request, response);
                 return;
             }
 
@@ -80,7 +80,7 @@ public class ResetPasswordServlet extends HttpServlet {
             // Validar que el token no haya expirado
             if (usuario.getExpiracionToken() != null && usuario.getExpiracionToken() < System.currentTimeMillis()) {
                 request.setAttribute("error", "El enlace de recuperación ha expirado");
-                request.getRequestDispatcher("/WEB-INF/views/inc1/reset-password.jsp?token=" + token).forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/views/inc1/reset-password.jsp").forward(request, response);
                 return;
             }
 
@@ -96,7 +96,7 @@ public class ResetPasswordServlet extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("error", "Error del servidor: " + e.getMessage());
-            request.getRequestDispatcher("reset-password.jsp?token=" + token).forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/inc1/reset-password.jsp").forward(request, response);
         }
     }
 

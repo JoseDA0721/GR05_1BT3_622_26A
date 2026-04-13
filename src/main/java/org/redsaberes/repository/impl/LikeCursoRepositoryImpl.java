@@ -74,7 +74,10 @@ public class LikeCursoRepositoryImpl implements LikeCursoRepository {
         Session session = sessionFactory.openSession();
         try {
             Query<LikeCurso> query = session.createQuery(
-                "FROM LikeCurso l WHERE l.curso.id = :cursoId",
+                "SELECT l FROM LikeCurso l " +
+                    "JOIN FETCH l.usuario " +
+                    "JOIN FETCH l.curso " +
+                    "WHERE l.curso.id = :cursoId",
                 LikeCurso.class
             );
             query.setParameter("cursoId", cursoId);
@@ -89,7 +92,9 @@ public class LikeCursoRepositoryImpl implements LikeCursoRepository {
         Session session = sessionFactory.openSession();
         try {
             Query<LikeCurso> query = session.createQuery(
-                "FROM LikeCurso l WHERE l.usuario.id = :usuarioId",
+                "SELECT l FROM LikeCurso l " +
+                    "JOIN FETCH l.curso " +
+                    "WHERE l.usuario.id = :usuarioId",
                 LikeCurso.class
             );
             query.setParameter("usuarioId", usuarioId);
@@ -98,7 +103,43 @@ public class LikeCursoRepositoryImpl implements LikeCursoRepository {
             session.close();
         }
     }
-    
+
+    @Override
+    public List<LikeCurso> findByCursoPropietarioId(Integer propietarioId) {
+        Session session = sessionFactory.openSession();
+        try {
+            Query<LikeCurso> query = session.createQuery(
+                "SELECT l FROM LikeCurso l " +
+                    "JOIN FETCH l.usuario " +
+                    "JOIN FETCH l.curso c " +
+                    "WHERE c.usuario.id = :propietarioId " +
+                    "ORDER BY l.id DESC",
+                LikeCurso.class
+            );
+            query.setParameter("propietarioId", propietarioId);
+            return query.getResultList();
+        } finally {
+            session.close();
+        }
+    }
+
+    @Override
+    public boolean existsByUsuarioAndCurso(Integer usuarioId, Integer cursoId) {
+        Session session = sessionFactory.openSession();
+        try {
+            Query<Long> query = session.createQuery(
+                "SELECT COUNT(l) FROM LikeCurso l WHERE l.usuario.id = :usuarioId AND l.curso.id = :cursoId",
+                Long.class
+            );
+            query.setParameter("usuarioId", usuarioId);
+            query.setParameter("cursoId", cursoId);
+            Long count = query.uniqueResult();
+            return count != null && count > 0;
+        } finally {
+            session.close();
+        }
+    }
+
     @Override
     public Long countByCursoId(Integer cursoId) {
         Session session = sessionFactory.openSession();
@@ -108,6 +149,21 @@ public class LikeCursoRepositoryImpl implements LikeCursoRepository {
                 Long.class
             );
             query.setParameter("cursoId", cursoId);
+            return query.uniqueResult();
+        } finally {
+            session.close();
+        }
+    }
+
+    @Override
+    public Long countByCursoPropietarioId(Integer propietarioId) {
+        Session session = sessionFactory.openSession();
+        try {
+            Query<Long> query = session.createQuery(
+                "SELECT COUNT(l) FROM LikeCurso l WHERE l.curso.usuario.id = :propietarioId",
+                Long.class
+            );
+            query.setParameter("propietarioId", propietarioId);
             return query.uniqueResult();
         } finally {
             session.close();

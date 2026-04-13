@@ -10,6 +10,11 @@ import java.io.IOException;
 
 @WebFilter({
         "/dashboard",
+        "/explore",
+        "/matches",
+        "/like-course",
+        "/accept-match",
+        "/course-material",
         "/create-course",
         "/edit-course",
         "/publicar",
