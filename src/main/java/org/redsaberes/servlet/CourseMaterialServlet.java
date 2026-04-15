@@ -6,27 +6,22 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import org.redsaberes.model.Curso;
-import org.redsaberes.model.Modulo;
 import org.redsaberes.model.Usuario;
-import org.redsaberes.repository.CursoRepository;
-import org.redsaberes.repository.MatchCursoRepository;
-import org.redsaberes.repository.ModuloRepository;
-import org.redsaberes.repository.impl.CursoRepositoryImpl;
-import org.redsaberes.repository.impl.MatchCursoRepositoryImpl;
-import org.redsaberes.repository.impl.ModuloRepositoryImpl;
+import org.redsaberes.service.CourseMaterialService;
+import org.redsaberes.service.dto.CourseMaterialViewDto;
+import org.redsaberes.service.dto.CourseMaterialViewOutcome;
+import org.redsaberes.service.impl.CourseMaterialServiceImpl;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.io.Serial;
 
 @WebServlet("/course-material")
 public class CourseMaterialServlet extends HttpServlet {
 
-    private final CursoRepository cursoRepository = new CursoRepositoryImpl();
-    private final MatchCursoRepository matchCursoRepository = new MatchCursoRepositoryImpl();
-    private final ModuloRepository moduloRepository = new ModuloRepositoryImpl();
+    @Serial
+    private static final long serialVersionUID = 1L;
+
+    private final CourseMaterialService courseMaterialService = new CourseMaterialServiceImpl();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -38,29 +33,21 @@ public class CourseMaterialServlet extends HttpServlet {
 
         Usuario usuario = (Usuario) session.getAttribute("usuario");
         Integer courseId = parseInteger(request.getParameter("id"));
-        if (courseId == null) {
+
+        CourseMaterialViewDto viewData = courseMaterialService.buildCourseMaterialView(usuario.getId(), courseId);
+        if (viewData.getOutcome() == CourseMaterialViewOutcome.INVALID_COURSE) {
             response.sendRedirect(request.getContextPath() + "/explore?error=invalid_course");
             return;
         }
 
-        Optional<Curso> cursoOpt = cursoRepository.findById(courseId);
-        if (cursoOpt.isEmpty()) {
+        if (viewData.getOutcome() == CourseMaterialViewOutcome.COURSE_NOT_FOUND) {
             response.sendRedirect(request.getContextPath() + "/explore?error=course_not_found");
             return;
         }
 
-        Curso curso = cursoOpt.get();
-        boolean isOwner = curso.getUsuario() != null && curso.getUsuario().getId().equals(usuario.getId());
-        boolean hasMatch = matchCursoRepository.existsByCursoAndUsuario(courseId, usuario.getId());
-        boolean accessGranted = isOwner || hasMatch;
-
-        List<Modulo> modulos = accessGranted
-                ? moduloRepository.findByCursoIdWithLecciones(courseId)
-                : Collections.emptyList();
-
-        request.setAttribute("curso", curso);
-        request.setAttribute("modulos", modulos);
-        request.setAttribute("accesoConcedido", accessGranted);
+        request.setAttribute("curso", viewData.getCurso());
+        request.setAttribute("modulos", viewData.getModulos());
+        request.setAttribute("accesoConcedido", viewData.isAccesoConcedido());
         request.getRequestDispatcher("/WEB-INF/views/inc2/course-material.jsp").forward(request, response);
     }
 

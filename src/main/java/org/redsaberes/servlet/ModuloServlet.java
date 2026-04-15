@@ -3,24 +3,31 @@ package org.redsaberes.servlet;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
-import org.redsaberes.model.*;
-import org.redsaberes.repository.*;
-import org.redsaberes.repository.impl.*;
+import org.redsaberes.model.Usuario;
+import org.redsaberes.service.ModuloManagementService;
+import org.redsaberes.service.dto.ModuloCommandOutcome;
+import org.redsaberes.service.dto.ModuloCommandResultDto;
+import org.redsaberes.service.dto.ModuloCreateOutcome;
+import org.redsaberes.service.dto.ModuloCreateResultDto;
+import org.redsaberes.service.dto.ModuloPageDataDto;
+import org.redsaberes.service.dto.ModuloViewOutcome;
+import org.redsaberes.service.impl.ModuloManagementServiceImpl;
 
 import java.io.IOException;
+import java.io.Serial;
 import java.util.List;
-import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @WebServlet("/edit-course")
 public class ModuloServlet extends HttpServlet {
+    private static final Logger LOGGER = Logger.getLogger(ModuloServlet.class.getName());
+
+    @Serial
     private static final long serialVersionUID = 1L;
 
-    private CursoRepository cursoRepository =
-        new CursoRepositoryImpl();
-    private ModuloRepository moduloRepository =
-        new ModuloRepositoryImpl();
-    private LeccionRepository leccionRepository =
-        new LeccionRepositoryImpl();
+    private final ModuloManagementService moduloManagementService =
+        new ModuloManagementServiceImpl();
 
     // GET: list (default), edit, reorder
     @Override
@@ -49,7 +56,7 @@ public class ModuloServlet extends HttpServlet {
         } catch (NumberFormatException e) {
             res.sendRedirect(req.getContextPath() + "/my-courses");
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error al cargar gestión de módulos", e);
             res.sendRedirect(req.getContextPath() + "/my-courses");
         }
     }
@@ -89,27 +96,27 @@ public class ModuloServlet extends HttpServlet {
         throws ServletException, IOException {
 
         String cursoIdStr = req.getParameter("id");
-        if (cursoIdStr == null || cursoIdStr.trim().isEmpty()) {
-            res.sendRedirect(req.getContextPath() + "/my-courses");
-            return;
-        }
-
-        Integer cursoId = Integer.parseInt(cursoIdStr);
+        Integer cursoId = (cursoIdStr == null || cursoIdStr.trim().isEmpty())
+            ? null
+            : Integer.parseInt(cursoIdStr);
         Usuario usuario = getUsuarioSesion(req);
-        if (usuario == null) {
+        ModuloPageDataDto data = moduloManagementService.buildListView(
+            cursoId,
+            usuario == null ? null : usuario.getId()
+        );
+
+        if (data.getOutcome() == ModuloViewOutcome.REDIRECT_LOGIN) {
             res.sendRedirect(req.getContextPath() + "/login");
             return;
         }
 
-        Optional<Curso> cursoOpt = cursoRepository.findById(cursoId);
-        if (cursoOpt.isEmpty() || !isOwner(cursoOpt.get(), usuario)) {
+        if (data.getOutcome() != ModuloViewOutcome.OK) {
             res.sendRedirect(req.getContextPath() + "/my-courses");
             return;
         }
 
-        List<Modulo> modulos = moduloRepository.findByCursoIdWithLecciones(cursoId);
-        req.setAttribute("curso", cursoOpt.get());
-        req.setAttribute("modulos", modulos);
+        req.setAttribute("curso", data.getCurso());
+        req.setAttribute("modulos", data.getModulos());
 
         String msg = req.getParameter("msg");
         applyFlashMessage(req, msg);
@@ -124,35 +131,29 @@ public class ModuloServlet extends HttpServlet {
         throws ServletException, IOException {
 
         String moduloIdStr = req.getParameter("id");
-        if (moduloIdStr == null || moduloIdStr.trim().isEmpty()) {
-            res.sendRedirect(req.getContextPath() + "/my-courses");
-            return;
-        }
-
-        Integer moduloId = Integer.parseInt(moduloIdStr);
+        Integer moduloId = (moduloIdStr == null || moduloIdStr.trim().isEmpty())
+            ? null
+            : Integer.parseInt(moduloIdStr);
         Usuario usuario = getUsuarioSesion(req);
-        if (usuario == null) {
+        ModuloPageDataDto data = moduloManagementService.buildEditView(
+            moduloId,
+            usuario == null ? null : usuario.getId()
+        );
+
+        if (data.getOutcome() == ModuloViewOutcome.REDIRECT_LOGIN) {
             res.sendRedirect(req.getContextPath() + "/login");
             return;
         }
 
-        Optional<Modulo> moduloOpt = moduloRepository.findById(moduloId);
-        if (moduloOpt.isEmpty() || moduloOpt.get().getCurso() == null) {
+        if (data.getOutcome() != ModuloViewOutcome.OK) {
             res.sendRedirect(req.getContextPath() + "/my-courses");
             return;
         }
 
-        Curso curso = moduloOpt.get().getCurso();
-        if (!isOwner(curso, usuario)) {
-            res.sendRedirect(req.getContextPath() + "/my-courses");
-            return;
-        }
-
-        List<Modulo> modulos = moduloRepository.findByCursoIdWithLecciones(curso.getId());
-        req.setAttribute("curso", curso);
-        req.setAttribute("modulos", modulos);
-        req.setAttribute("moduloEditar", moduloOpt.get());
-        req.setAttribute("accionModulo", "edit");
+        req.setAttribute("curso", data.getCurso());
+        req.setAttribute("modulos", data.getModulos());
+        req.setAttribute("moduloEditar", data.getModuloEditar());
+        req.setAttribute("accionModulo", data.getAccionModulo());
         applyFlashMessage(req, req.getParameter("msg"));
 
         req.getRequestDispatcher("/WEB-INF/views/inc1/manage-modules.jsp")
@@ -169,29 +170,29 @@ public class ModuloServlet extends HttpServlet {
             cursoIdStr = req.getParameter("id");
         }
 
-        if (cursoIdStr == null || cursoIdStr.trim().isEmpty()) {
-            res.sendRedirect(req.getContextPath() + "/my-courses");
-            return;
-        }
-
-        Integer cursoId = Integer.parseInt(cursoIdStr);
+        Integer cursoId = (cursoIdStr == null || cursoIdStr.trim().isEmpty())
+            ? null
+            : Integer.parseInt(cursoIdStr);
         Usuario usuario = getUsuarioSesion(req);
-        if (usuario == null) {
+        ModuloPageDataDto data = moduloManagementService.buildReorderView(
+            cursoId,
+            usuario == null ? null : usuario.getId()
+        );
+
+        if (data.getOutcome() == ModuloViewOutcome.REDIRECT_LOGIN) {
             res.sendRedirect(req.getContextPath() + "/login");
             return;
         }
 
-        Optional<Curso> cursoOpt = cursoRepository.findById(cursoId);
-        if (cursoOpt.isEmpty() || !isOwner(cursoOpt.get(), usuario)) {
+        if (data.getOutcome() != ModuloViewOutcome.OK) {
             res.sendRedirect(req.getContextPath() + "/my-courses");
             return;
         }
 
-        List<Modulo> modulosOrdenables = moduloRepository.findByCursoId(cursoId);
-        req.setAttribute("curso", cursoOpt.get());
-        req.setAttribute("modulos", modulosOrdenables);
-        req.setAttribute("modoReordenar", true);
-        req.setAttribute("accionModulo", "reorder");
+        req.setAttribute("curso", data.getCurso());
+        req.setAttribute("modulos", data.getModulos());
+        req.setAttribute("modoReordenar", data.isModoReordenar());
+        req.setAttribute("accionModulo", data.getAccionModulo());
         applyFlashMessage(req, req.getParameter("msg"));
 
         req.getRequestDispatcher("/WEB-INF/views/inc1/manage-modules.jsp")
@@ -207,62 +208,36 @@ public class ModuloServlet extends HttpServlet {
         String tituloLeccion = req.getParameter("tituloLeccion");
         String contenidoLeccion = req.getParameter("contenidoLeccion");
 
-        if (cursoIdStr == null || cursoIdStr.trim().isEmpty()) {
+        Integer cursoId = parseInteger(cursoIdStr);
+        Usuario usuario = getUsuarioSesion(req);
+
+        ModuloCreateResultDto result = moduloManagementService.createModulo(
+            cursoId,
+            usuario == null ? null : usuario.getId(),
+            tituloModulo,
+            tituloLeccion,
+            contenidoLeccion
+        );
+
+        if (result.getOutcome() == ModuloCreateOutcome.REDIRECT_MY_COURSES) {
             res.sendRedirect(req.getContextPath() + "/my-courses");
             return;
         }
 
-        // Validar campos obligatorios (RF-C02)
-        if (tituloModulo == null || tituloModulo.trim().isEmpty() ||
-            tituloLeccion == null || tituloLeccion.trim().isEmpty()) {
-
-            req.setAttribute("error", "El titulo del modulo y de la primera leccion son obligatorios.");
-            recargarVista(req, res, Integer.parseInt(cursoIdStr));
+        if (result.getOutcome() == ModuloCreateOutcome.FORWARD_WITH_ERROR) {
+            req.setAttribute("error", result.getError());
+            req.setAttribute("curso", result.getCurso());
+            req.setAttribute("modulos", result.getModulos());
+            req.getRequestDispatcher("/WEB-INF/views/inc1/edit-course.jsp")
+                .forward(req, res);
             return;
         }
 
-        try {
-            int cursoId = Integer.parseInt(cursoIdStr);
-            Optional<Curso> cursoOpt = cursoRepository.findById(cursoId);
-            Usuario usuario = getUsuarioSesion(req);
-
-            if (cursoOpt.isEmpty() || usuario == null || !isOwner(cursoOpt.get(), usuario)) {
-                res.sendRedirect(req.getContextPath() + "/my-courses");
-                return;
-            }
-
-            Curso curso = cursoOpt.get();
-
-            List<Modulo> modulosExistentes = moduloRepository.findByCursoId(cursoId);
-            int nuevoOrden = modulosExistentes.size() + 1;
-
-            Modulo modulo = new Modulo(
-                null,
-                tituloModulo.trim(),
-                nuevoOrden,
-                curso
-            );
-            moduloRepository.save(modulo);
-
-            Leccion leccion = new Leccion(
-                null,
-                tituloLeccion.trim(),
-                contenidoLeccion,
-                modulo
-            );
-            leccionRepository.save(leccion);
-
-            res.sendRedirect(
-                req.getContextPath()
-                + "/edit-course?id=" + cursoId
-                + "&msg=modulo-agregado"
-            );
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            req.setAttribute("error", "Error al guardar el modulo: " + e.getMessage());
-            recargarVista(req, res, Integer.parseInt(cursoIdStr));
-        }
+        res.sendRedirect(
+            req.getContextPath()
+            + "/edit-course?id=" + result.getCursoId()
+            + "&msg=modulo-agregado"
+        );
     }
 
     private void handleUpdatePost(HttpServletRequest req,
@@ -273,37 +248,26 @@ public class ModuloServlet extends HttpServlet {
         String tituloModulo = req.getParameter("tituloModulo");
         String ordenStr = req.getParameter("orden");
 
-        if (moduloIdStr == null || moduloIdStr.trim().isEmpty()) {
-            res.sendRedirect(req.getContextPath() + "/my-courses");
-            return;
-        }
-
-        Integer moduloId = Integer.parseInt(moduloIdStr);
+        Integer moduloId = (moduloIdStr == null || moduloIdStr.trim().isEmpty())
+            ? null
+            : Integer.parseInt(moduloIdStr);
         Usuario usuario = getUsuarioSesion(req);
-        Optional<Modulo> moduloOpt = moduloRepository.findById(moduloId);
 
-        if (usuario == null || moduloOpt.isEmpty() || moduloOpt.get().getCurso() == null
-            || !isOwner(moduloOpt.get().getCurso(), usuario)) {
+        ModuloCommandResultDto result = moduloManagementService.updateModulo(
+            moduloId,
+            usuario == null ? null : usuario.getId(),
+            tituloModulo,
+            ordenStr
+        );
+
+        if (result.getOutcome() == ModuloCommandOutcome.REDIRECT_MY_COURSES) {
             res.sendRedirect(req.getContextPath() + "/my-courses");
             return;
         }
-
-        Modulo modulo = moduloOpt.get();
-        if (tituloModulo != null && !tituloModulo.trim().isEmpty()) {
-            modulo.setTitulo(tituloModulo.trim());
-        }
-        if (ordenStr != null && !ordenStr.trim().isEmpty()) {
-            int nuevoOrden = Integer.parseInt(ordenStr);
-            if (nuevoOrden > 0) {
-                modulo.setOrden(nuevoOrden);
-            }
-        }
-
-        moduloRepository.update(modulo);
 
         res.sendRedirect(
             req.getContextPath()
-            + "/edit-course?action=edit&id=" + modulo.getId()
+            + "/edit-course?action=edit&id=" + result.getModuloId()
             + "&msg=modulo-actualizado"
         );
     }
@@ -313,27 +277,24 @@ public class ModuloServlet extends HttpServlet {
         throws IOException {
 
         String moduloIdStr = req.getParameter("moduloId");
-        if (moduloIdStr == null || moduloIdStr.trim().isEmpty()) {
-            res.sendRedirect(req.getContextPath() + "/my-courses");
-            return;
-        }
-
-        Integer moduloId = Integer.parseInt(moduloIdStr);
+        Integer moduloId = (moduloIdStr == null || moduloIdStr.trim().isEmpty())
+            ? null
+            : Integer.parseInt(moduloIdStr);
         Usuario usuario = getUsuarioSesion(req);
-        Optional<Modulo> moduloOpt = moduloRepository.findById(moduloId);
 
-        if (usuario == null || moduloOpt.isEmpty() || moduloOpt.get().getCurso() == null
-            || !isOwner(moduloOpt.get().getCurso(), usuario)) {
+        ModuloCommandResultDto result = moduloManagementService.deleteModulo(
+            moduloId,
+            usuario == null ? null : usuario.getId()
+        );
+
+        if (result.getOutcome() == ModuloCommandOutcome.REDIRECT_MY_COURSES) {
             res.sendRedirect(req.getContextPath() + "/my-courses");
             return;
         }
-
-        Integer cursoId = moduloOpt.get().getCurso().getId();
-        moduloRepository.delete(moduloId);
 
         res.sendRedirect(
             req.getContextPath()
-            + "/edit-course?action=reorder&cursoId=" + cursoId
+            + "/edit-course?action=reorder&cursoId=" + result.getCursoId()
             + "&msg=modulo-eliminado"
         );
     }
@@ -343,46 +304,30 @@ public class ModuloServlet extends HttpServlet {
         throws IOException {
 
         String cursoIdStr = req.getParameter("cursoId");
-        if (cursoIdStr == null || cursoIdStr.trim().isEmpty()) {
-            res.sendRedirect(req.getContextPath() + "/my-courses");
-            return;
-        }
-
-        Integer cursoId = Integer.parseInt(cursoIdStr);
+        Integer cursoId = (cursoIdStr == null || cursoIdStr.trim().isEmpty())
+            ? null
+            : Integer.parseInt(cursoIdStr);
         Usuario usuario = getUsuarioSesion(req);
-        Optional<Curso> cursoOpt = cursoRepository.findById(cursoId);
 
-        if (usuario == null || cursoOpt.isEmpty() || !isOwner(cursoOpt.get(), usuario)) {
+        ModuloCommandResultDto result = moduloManagementService.saveModuloOrder(
+            cursoId,
+            usuario == null ? null : usuario.getId(),
+            parseOrderedIds(req)
+        );
+
+        if (result.getOutcome() == ModuloCommandOutcome.REDIRECT_MY_COURSES) {
             res.sendRedirect(req.getContextPath() + "/my-courses");
             return;
         }
 
-        List<Integer> orderedIds = parseOrderedIds(req);
-        if (orderedIds.isEmpty()) {
-            res.sendRedirect(
-                req.getContextPath()
-                + "/edit-course?action=reorder&cursoId=" + cursoId
-                + "&msg=orden-vacio"
-            );
-            return;
-        }
-
-        int orden = 1;
-        for (Integer moduloId : orderedIds) {
-            Optional<Modulo> moduloOpt = moduloRepository.findById(moduloId);
-            if (moduloOpt.isEmpty() || moduloOpt.get().getCurso() == null
-                || !cursoId.equals(moduloOpt.get().getCurso().getId())) {
-                continue;
-            }
-            Modulo modulo = moduloOpt.get();
-            modulo.setOrden(orden++);
-            moduloRepository.update(modulo);
-        }
+        String msg = result.getOutcome() == ModuloCommandOutcome.ORDER_EMPTY
+            ? "orden-vacio"
+            : "orden-guardado";
 
         res.sendRedirect(
             req.getContextPath()
-            + "/edit-course?action=reorder&cursoId=" + cursoId
-            + "&msg=orden-guardado"
+            + "/edit-course?action=reorder&cursoId=" + result.getCursoId()
+            + "&msg=" + msg
         );
     }
 
@@ -454,30 +399,11 @@ public class ModuloServlet extends HttpServlet {
         return (Usuario) session.getAttribute("usuario");
     }
 
-    private boolean isOwner(Curso curso, Usuario usuario) {
-        return curso != null
-            && curso.getUsuario() != null
-            && curso.getUsuario().getId() != null
-            && usuario != null
-            && usuario.getId() != null
-            && curso.getUsuario().getId().equals(usuario.getId());
-    }
-
-    // Helper: recargar la vista con datos actualizados
-    private void recargarVista(HttpServletRequest req,
-                                HttpServletResponse res,
-                                int cursoId)
-        throws ServletException, IOException {
-
-        Optional<Curso> cursoOpt =
-            cursoRepository.findById(cursoId);
-        List<Modulo> modulos =
-            moduloRepository.findByCursoIdWithLecciones(cursoId);
-
-        req.setAttribute("curso", cursoOpt.orElse(null));
-        req.setAttribute("modulos", modulos);
-        req.getRequestDispatcher(
-            "/WEB-INF/views/inc1/edit-course.jsp")
-           .forward(req, res);
+    private Integer parseInteger(String value) {
+        try {
+            return value == null ? null : Integer.parseInt(value.trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 }

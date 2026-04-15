@@ -3,26 +3,30 @@ package org.redsaberes.servlet;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
-import org.mindrot.jbcrypt.BCrypt;
 import org.redsaberes.model.Usuario;
-import org.redsaberes.repository.UsuarioRepository;
-import org.redsaberes.repository.impl.UsuarioRepositoryImpl;
+import org.redsaberes.service.AuthService;
+import org.redsaberes.service.exception.ServiceValidationException;
+import org.redsaberes.service.impl.AuthServiceImpl;
 
 import java.io.IOException;
-import java.util.Optional;
-import java.util.UUID;
+import java.io.Serial;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @WebServlet("/login")
 public class LoginServlet extends HttpServlet {
+    private static final Logger LOGGER = Logger.getLogger(LoginServlet.class.getName());
+
+    @Serial
     private static final long serialVersionUID = 1L;
-    private UsuarioRepository usuarioRepository = new UsuarioRepositoryImpl();
+    private final AuthService authService = new AuthServiceImpl();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try{
             request.getRequestDispatcher("/WEB-INF/views/inc1/login.jsp").forward(request, response);
         } catch(Exception e){
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error al mostrar la vista de login", e);
         }
     }
 
@@ -31,82 +35,38 @@ public class LoginServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         response.setContentType("text/html; charset=UTF-8");
 
-        //Obtener parámetros del formulario
-        String correo = request.getParameter("email");
-        String contrasena = request.getParameter("password");
-        String remember = request.getParameter("remember");
-
-        //Validaciones
         try{
-            //Validar campos completos
-            if(correo == null || correo.isEmpty() || contrasena == null || contrasena.isEmpty()){
-                request.setAttribute("error", "Todos los campos son obligatorios");
-                request.getRequestDispatcher("/WEB-INF/views/inc1/login.jsp").forward(request, response);
-                return;
+            String correo = request.getParameter("email");
+            String contrasena = request.getParameter("password");
+            String remember = request.getParameter("remember");
+
+            Usuario usuario = authService.autenticar(correo, contrasena);
+
+            HttpSession session = request.getSession();
+            session.setAttribute("usuario", usuario);
+            session.setAttribute("token", usuario.getTokenSesion());
+
+            if(remember != null){
+                Cookie cookie = new Cookie("email", correo);
+                cookie.setMaxAge(30 * 24 * 60 * 60);
+                cookie.setPath("/");
+                cookie.setHttpOnly(true);
+                response.addCookie(cookie);
             }
 
-            //Validar formato de correo
-            if(!isValidEmail(correo)){
-                request.setAttribute("error", "Formato de correo inválido");
-                request.getRequestDispatcher("/WEB-INF/views/inc1/login.jsp").forward(request, response);
-                return;
-            }
+            response.sendRedirect(request.getContextPath() + "/dashboard");
 
-            //Verificar credenciales en la BD
-            Optional<Usuario> usuarioOpt = usuarioRepository.findByCorreo(correo);
-
-            if(usuarioOpt.isPresent()){
-                Usuario usuario = usuarioOpt.get();
-
-                // Validar contraseña con BCrypt
-                if(BCrypt.checkpw(contrasena, usuario.getContrasena())){
-                    //Generar token
-                    String token = generarToken();
-                    usuario.setTokenSesion(token);
-                    usuarioRepository.actualizarToken(usuario.getId(), token);
-
-                    //Permitir acceso
-                    HttpSession session = request.getSession();
-                    session.setAttribute("usuario", usuario);
-                    session.setAttribute("token", token);
-
-                    //Recordame
-                    if(remember != null){
-                        Cookie cookie = new Cookie("email", correo);
-                        cookie.setMaxAge(30 * 24 * 60 * 60);
-                        cookie.setPath("/");
-                        cookie.setHttpOnly(true);
-                        response.addCookie(cookie);
-                    }
-
-                    //Redirigir al dashboard
-                    response.sendRedirect(request.getContextPath() + "/dashboard");
-                } else {
-                    //Contraseña incorrecta
-                    request.setAttribute("error", "Correo o contraseña incorrectos");
-                    request.getRequestDispatcher("/WEB-INF/views/inc1/login.jsp").forward(request, response);
-                }
-            } else {
-                //Usuario no encontrado
-                request.setAttribute("error", "Correo o contraseña incorrectos");
-                request.getRequestDispatcher("/WEB-INF/views/inc1/login.jsp").forward(request, response);
-            }
+        } catch (ServiceValidationException e) {
+            request.setAttribute("error", e.getMessage());
+            request.getRequestDispatcher("/WEB-INF/views/inc1/login.jsp").forward(request, response);
 
         }catch(Exception e){
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error al autenticar usuario", e);
             request.setAttribute("error", "Error del servidor");
             request.getRequestDispatcher("/WEB-INF/views/inc1/login.jsp").forward(request, response);
         }
 
     }
 
-    private boolean isValidEmail(String email) {
-        String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
-        return email.matches(emailRegex);
-    }
-
-    private String generarToken() {
-        return UUID.randomUUID().toString();
-    }
 
 }

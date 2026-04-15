@@ -6,18 +6,22 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import org.redsaberes.model.Curso;
 import org.redsaberes.model.Usuario;
-import org.redsaberes.repository.CursoRepository;
-import org.redsaberes.repository.impl.CursoRepositoryImpl;
+import org.redsaberes.service.PreviewCourseService;
+import org.redsaberes.service.dto.PreviewCourseViewDto;
+import org.redsaberes.service.dto.PreviewCourseViewOutcome;
+import org.redsaberes.service.impl.PreviewCourseServiceImpl;
 
 import java.io.IOException;
-import java.util.Optional;
+import java.io.Serial;
 
 @WebServlet(urlPatterns = {"/preview-course", "/view-course"})
 public class PreviewCourseServlet extends HttpServlet {
 
-    private final CursoRepository cursoRepository = new CursoRepositoryImpl();
+    @Serial
+    private static final long serialVersionUID = 1L;
+
+    private final PreviewCourseService previewCourseService = new PreviewCourseServiceImpl();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -30,20 +34,20 @@ public class PreviewCourseServlet extends HttpServlet {
         }
 
         Integer courseId = parseInteger(request.getParameter("id"));
-        if (courseId == null) {
+        Usuario usuario = (Usuario) session.getAttribute("usuario");
+        PreviewCourseViewDto viewData = previewCourseService.buildPreviewView(usuario.getId(), courseId);
+
+        if (viewData.getOutcome() == PreviewCourseViewOutcome.INVALID_COURSE) {
             response.sendRedirect(request.getContextPath() + "/my-courses?error=invalid_course");
             return;
         }
 
-        Usuario usuario = (Usuario) session.getAttribute("usuario");
-        Optional<Curso> cursoOpt = cursoRepository.findByIdWithRelations(courseId);
-
-        if (cursoOpt.isEmpty() || !isOwner(cursoOpt.get(), usuario)) {
+        if (viewData.getOutcome() == PreviewCourseViewOutcome.COURSE_NOT_FOUND) {
             response.sendRedirect(request.getContextPath() + "/my-courses?error=course_not_found");
             return;
         }
 
-        request.setAttribute("curso", cursoOpt.get());
+        request.setAttribute("curso", viewData.getCurso());
         request.getRequestDispatcher("/WEB-INF/views/preview-course.jsp").forward(request, response);
     }
 
@@ -53,12 +57,5 @@ public class PreviewCourseServlet extends HttpServlet {
         } catch (NumberFormatException e) {
             return null;
         }
-    }
-
-    private boolean isOwner(Curso curso, Usuario usuario) {
-        return curso.getUsuario() != null
-                && usuario != null
-                && curso.getUsuario().getId() != null
-                && curso.getUsuario().getId().equals(usuario.getId());
     }
 }
