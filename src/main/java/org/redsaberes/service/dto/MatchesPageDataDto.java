@@ -26,8 +26,16 @@ public class MatchesPageDataDto {
         return interested;
     }
 
+    public int getInterestedCount() {
+        return interested == null ? 0 : interested.size();
+    }
+
     public List<Map<String, Object>> getMatches() {
         return matches;
+    }
+
+    public int getMatchesCount() {
+        return matches == null ? 0 : matches.size();
     }
 
     public List<Curso> getMyCourses() {

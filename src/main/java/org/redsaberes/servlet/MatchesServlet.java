@@ -40,9 +40,9 @@ public class MatchesServlet extends HttpServlet {
             MatchesPageDataDto data = matchesService.buildMatchesPageData(usuario.getId(), filterCourseId);
 
             request.setAttribute("interested", data.getInterested());
-            request.setAttribute("interestedCount", data.getInterested().size());
+            request.setAttribute("interestedCount", data.getInterestedCount());
             request.setAttribute("matches", data.getMatches());
-            request.setAttribute("matchesCount", data.getMatches().size());
+            request.setAttribute("matchesCount", data.getMatchesCount());
             request.setAttribute("selectedCourseId", data.getSelectedCourseId());
             request.setAttribute("myCourses", data.getMyCourses());
             request.getRequestDispatcher("/WEB-INF/views/inc2/matches.jsp").forward(request, response);

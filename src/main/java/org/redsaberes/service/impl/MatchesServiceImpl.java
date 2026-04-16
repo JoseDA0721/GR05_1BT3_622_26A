@@ -80,34 +80,36 @@ public class MatchesServiceImpl implements MatchesService {
         List<Map<String, Object>> matches = new ArrayList<>();
 
         List<MatchCurso> asCreator = matchCursoRepository.findByCreadorId(usuarioId);
-        for (MatchCurso match : asCreator) {
-            Map<String, Object> row = new HashMap<>();
-            row.put("name", safe(match.getEstudiante() != null ? match.getEstudiante().getNombre() : null));
-            row.put("email", safe(match.getEstudiante() != null ? match.getEstudiante().getCorreoElectronico() : null));
-            row.put("course", safe(match.getCurso() != null ? match.getCurso().getTitulo() : null));
-            row.put("courseId", match.getCurso() != null ? match.getCurso().getId() : null);
-            row.put("matchDate", safe(match.getFechaConfirmacion()));
-            row.put("ownerView", true);
-            matches.add(row);
-        }
+        appendMatchesByRole(matches, asCreator, true);
 
         List<MatchCurso> asStudent = matchCursoRepository.findByEstudianteId(usuarioId);
-        for (MatchCurso match : asStudent) {
-            Map<String, Object> row = new HashMap<>();
-            row.put("name", safe(match.getCreador() != null ? match.getCreador().getNombre() : null));
-            row.put("email", safe(match.getCreador() != null ? match.getCreador().getCorreoElectronico() : null));
-            row.put("course", safe(match.getCurso() != null ? match.getCurso().getTitulo() : null));
-            row.put("courseId", match.getCurso() != null ? match.getCurso().getId() : null);
-            row.put("matchDate", safe(match.getFechaConfirmacion()));
-            row.put("ownerView", false);
-            matches.add(row);
-        }
+        appendMatchesByRole(matches, asStudent, false);
 
         return matches;
+    }
+
+    private void appendMatchesByRole(List<Map<String, Object>> matches,
+                                     List<MatchCurso> source,
+                                     boolean ownerView) {
+        for (MatchCurso match : source) {
+            matches.add(toMatchRow(match, ownerView));
+        }
+    }
+
+    private Map<String, Object> toMatchRow(MatchCurso match, boolean ownerView) {
+        Usuario counterpart = ownerView ? match.getEstudiante() : match.getCreador();
+
+        Map<String, Object> row = new HashMap<>();
+        row.put("name", safe(counterpart != null ? counterpart.getNombre() : null));
+        row.put("email", safe(counterpart != null ? counterpart.getCorreoElectronico() : null));
+        row.put("course", safe(match.getCurso() != null ? match.getCurso().getTitulo() : null));
+        row.put("courseId", match.getCurso() != null ? match.getCurso().getId() : null);
+        row.put("matchDate", safe(match.getFechaConfirmacion()));
+        row.put("ownerView", ownerView);
+        return row;
     }
 
     private String safe(String value) {
         return value == null ? "" : value;
     }
 }
-
