@@ -50,6 +50,9 @@ public class Curso {
     @OneToMany(mappedBy = "curso", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Inscripcion> inscripciones = new ArrayList<>();
 
+    @OneToMany(mappedBy = "curso", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<Resena> resenas = new ArrayList<>();
+
     public Curso() {
     }
 
@@ -159,6 +162,24 @@ public class Curso {
         this.inscripciones = inscripciones;
     }
 
+    public List<Resena> getResenas() {
+        return resenas;
+    }
+
+    public void setResenas(List<Resena> resenas) {
+        for (Resena resena : new ArrayList<>(this.resenas)) {
+            removeResena(resena);
+        }
+
+        if (resenas == null) {
+            return;
+        }
+
+        for (Resena resena : resenas) {
+            addResena(resena);
+        }
+    }
+
     // ===== MÉTODOS HELPER =====
 
     public Integer getModulosCount() {
@@ -171,5 +192,26 @@ public class Curso {
 
     public Integer getInscritosCount() {
         return inscripciones.size();
+    }
+
+    public Integer getResenasCount() {
+        return resenas.size();
+    }
+
+    public void addResena(Resena resena) {
+        if (resena == null || this.resenas.contains(resena)) {
+            return;
+        }
+        this.resenas.add(resena);
+        resena.setCurso(this);
+    }
+
+    public void removeResena(Resena resena) {
+        if (resena == null || !this.resenas.remove(resena)) {
+            return;
+        }
+        if (resena.getCurso() == this) {
+            resena.setCurso(null);
+        }
     }
 }
