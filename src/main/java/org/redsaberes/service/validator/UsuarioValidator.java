@@ -56,4 +56,3 @@ public final class UsuarioValidator {
         return email != null && email.matches(emailRegex);
     }
 }
-

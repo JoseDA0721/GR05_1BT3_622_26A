@@ -56,4 +56,3 @@ public class UsuarioServiceImpl implements UsuarioService {
         return BCrypt.hashpw(contrasena, BCrypt.gensalt(12));
     }
 }
-
