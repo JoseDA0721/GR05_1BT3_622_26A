@@ -99,7 +99,7 @@ public class ModuloServlet extends HttpServlet {
         Integer cursoId = (cursoIdStr == null || cursoIdStr.trim().isEmpty())
             ? null
             : Integer.parseInt(cursoIdStr);
-        Usuario usuario = getUsuarioSesion(req);
+        Usuario usuario = ServletUtil.getUsuarioSesion(req);
         ModuloPageDataDto data = moduloManagementService.buildListView(
             cursoId,
             usuario == null ? null : usuario.getId()
@@ -134,7 +134,7 @@ public class ModuloServlet extends HttpServlet {
         Integer moduloId = (moduloIdStr == null || moduloIdStr.trim().isEmpty())
             ? null
             : Integer.parseInt(moduloIdStr);
-        Usuario usuario = getUsuarioSesion(req);
+        Usuario usuario = ServletUtil.getUsuarioSesion(req);
         ModuloPageDataDto data = moduloManagementService.buildEditView(
             moduloId,
             usuario == null ? null : usuario.getId()
@@ -173,7 +173,7 @@ public class ModuloServlet extends HttpServlet {
         Integer cursoId = (cursoIdStr == null || cursoIdStr.trim().isEmpty())
             ? null
             : Integer.parseInt(cursoIdStr);
-        Usuario usuario = getUsuarioSesion(req);
+        Usuario usuario = ServletUtil.getUsuarioSesion(req);
         ModuloPageDataDto data = moduloManagementService.buildReorderView(
             cursoId,
             usuario == null ? null : usuario.getId()
@@ -208,8 +208,8 @@ public class ModuloServlet extends HttpServlet {
         String tituloLeccion = req.getParameter("tituloLeccion");
         String contenidoLeccion = req.getParameter("contenidoLeccion");
 
-        Integer cursoId = parseInteger(cursoIdStr);
-        Usuario usuario = getUsuarioSesion(req);
+        Integer cursoId = ServletUtil.parseInteger(cursoIdStr);
+        Usuario usuario = ServletUtil.getUsuarioSesion(req);
 
         ModuloCreateResultDto result = moduloManagementService.createModulo(
             cursoId,
@@ -251,7 +251,7 @@ public class ModuloServlet extends HttpServlet {
         Integer moduloId = (moduloIdStr == null || moduloIdStr.trim().isEmpty())
             ? null
             : Integer.parseInt(moduloIdStr);
-        Usuario usuario = getUsuarioSesion(req);
+        Usuario usuario = ServletUtil.getUsuarioSesion(req);
 
         ModuloCommandResultDto result = moduloManagementService.updateModulo(
             moduloId,
@@ -280,7 +280,7 @@ public class ModuloServlet extends HttpServlet {
         Integer moduloId = (moduloIdStr == null || moduloIdStr.trim().isEmpty())
             ? null
             : Integer.parseInt(moduloIdStr);
-        Usuario usuario = getUsuarioSesion(req);
+        Usuario usuario = ServletUtil.getUsuarioSesion(req);
 
         ModuloCommandResultDto result = moduloManagementService.deleteModulo(
             moduloId,
@@ -307,7 +307,7 @@ public class ModuloServlet extends HttpServlet {
         Integer cursoId = (cursoIdStr == null || cursoIdStr.trim().isEmpty())
             ? null
             : Integer.parseInt(cursoIdStr);
-        Usuario usuario = getUsuarioSesion(req);
+        Usuario usuario = ServletUtil.getUsuarioSesion(req);
 
         ModuloCommandResultDto result = moduloManagementService.saveModuloOrder(
             cursoId,
@@ -391,19 +391,5 @@ public class ModuloServlet extends HttpServlet {
         }
     }
 
-    private Usuario getUsuarioSesion(HttpServletRequest req) {
-        HttpSession session = req.getSession(false);
-        if (session == null) {
-            return null;
-        }
-        return (Usuario) session.getAttribute("usuario");
-    }
 
-    private Integer parseInteger(String value) {
-        try {
-            return value == null ? null : Integer.parseInt(value.trim());
-        } catch (NumberFormatException e) {
-            return null;
-        }
-    }
 }
