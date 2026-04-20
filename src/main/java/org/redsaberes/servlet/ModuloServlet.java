@@ -357,38 +357,25 @@ public class ModuloServlet extends HttpServlet {
         return orderedIds;
     }
 
+    // 1. Definimos la estructura
+    private static final Map<String, String[]> FLASH_MESSAGES = Map.of(
+            "modulo-agregado", new String[]{"exito", "Modulo y leccion guardados correctamente."},
+            "modulo-actualizado", new String[]{"exito", "Modulo actualizado correctamente."},
+            "modulo-eliminado", new String[]{"exito", "Modulo eliminado correctamente."},
+            "orden-guardado", new String[]{"exito", "Orden de modulos guardado correctamente."},
+            "orden-vacio", new String[]{"error", "No se recibio ningun modulo para reordenar."},
+            "sin-contenido", new String[]{"error", "El curso necesita al menos un módulo con una lección para publicarse."},
+            "ya-publicado", new String[]{"exito", "Este curso ya está publicado."}
+    );
+
+    //2. Nuevo algoritmo
     private void applyFlashMessage(HttpServletRequest req, String msg) {
-        if (msg == null) {
+        if (msg == null || !FLASH_MESSAGES.containsKey(msg)) {
             return;
         }
-        switch (msg) {
-            case "modulo-agregado":
-                req.setAttribute("exito", "Modulo y leccion guardados correctamente.");
-                break;
-            case "modulo-actualizado":
-                req.setAttribute("exito", "Modulo actualizado correctamente.");
-                break;
-            case "modulo-eliminado":
-                req.setAttribute("exito", "Modulo eliminado correctamente.");
-                break;
-            case "orden-guardado":
-                req.setAttribute("exito", "Orden de modulos guardado correctamente.");
-                break;
-            case "orden-vacio":
-                req.setAttribute("error", "No se recibio ningun modulo para reordenar.");
-                break;
-            case "sin-contenido":
-                req.setAttribute("error",
-                        "El curso necesita al menos un módulo " +
-                                "con una lección para publicarse.");
-                break;
-            case "ya-publicado":
-                req.setAttribute("exito",
-                        "Este curso ya está publicado.");
-                break;
-            default:
-                break;
-        }
+
+        String[] config = FLASH_MESSAGES.get(msg);
+        req.setAttribute(config[0], config[1]);
     }
 
 
