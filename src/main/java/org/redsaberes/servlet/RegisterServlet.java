@@ -5,26 +5,29 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.mindrot.jbcrypt.BCrypt;
 import org.redsaberes.model.Usuario;
-import org.redsaberes.repository.UsuarioRepository;
-import org.redsaberes.repository.impl.UsuarioRepositoryImpl;
+import org.redsaberes.service.UsuarioService;
+import org.redsaberes.service.exception.ServiceValidationException;
+import org.redsaberes.service.impl.UsuarioServiceImpl;
 import org.redsaberes.util.EmailUtil;
 
 import java.io.IOException;
+import java.io.Serial;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @WebServlet("/register")
 public class RegisterServlet extends HttpServlet {
+    private static final Logger LOGGER = Logger.getLogger(RegisterServlet.class.getName());
+
+    @Serial
     private static final long serialVersionUID = 1L;
-    private UsuarioRepository usuarioRepository = new UsuarioRepositoryImpl();
+    private final UsuarioService usuarioService = new UsuarioServiceImpl();
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
         response.setContentType("text/html;charset=UTF-8");
-
-        //Obtener parámetros del formulario
-        Usuario usuario = new Usuario();
 
         String nombre = request.getParameter("name");
         String correo = request.getParameter("email");
@@ -32,98 +35,39 @@ public class RegisterServlet extends HttpServlet {
         String confirmarContrasena = request.getParameter("confirmPassword");
         String terms = request.getParameter("terms");
 
-
-        System.out.println(nombre + correo + contrasena+confirmarContrasena+terms);
-        //Validaciones del servidor
         try{
-            //Validar blancos PRIMERO
-            if (nombre == null || nombre.trim().isEmpty() ||
-                    correo == null || correo.trim().isEmpty() ||
-                    contrasena == null || contrasena.isEmpty() ||
-                    confirmarContrasena == null || confirmarContrasena.isEmpty()) {
+            Usuario usuarioRegistrado = usuarioService.registrarUsuario(
+                    nombre,
+                    correo,
+                    contrasena,
+                    confirmarContrasena,
+                    terms != null
+            );
 
-                request.setAttribute("error", "Todos los campos son obligatorios");
-                request.getRequestDispatcher("/WEB-INF/views/inc1/register.jsp").forward(request, response);
-                return;
-            }
-
-            // Validar que aceptó términos y condiciones
-            if (terms == null) {
-                request.setAttribute("error", "Debes aceptar los términos y condiciones");
-                request.getRequestDispatcher("/WEB-INF/views/inc1/register.jsp").forward(request, response);
-                return;
-            }
-
-            // Validar nombre (máximo 100 caracteres)
-            if (nombre.length() > 100) {
-                request.setAttribute("error", "El nombre no puede exceder 100 caracteres");
-                request.getRequestDispatcher("/WEB-INF/views/inc1/register.jsp").forward(request, response);
-                return;
-            }
-
-            // Validar que las contraseñas coincidan
-            if (!contrasena.equals(confirmarContrasena)) {
-                request.setAttribute("error", "Las contraseñas no coinciden");
-                request.getRequestDispatcher("/WEB-INF/views/inc1/register.jsp").forward(request, response);
-                return;
-            }
-
-            // Validar longitud de contraseña
-            if (contrasena.length() < 6) {
-                request.setAttribute("error", "La contraseña debe tener al menos 6 caracteres");
-                request.getRequestDispatcher("/WEB-INF/views/inc1/register.jsp").forward(request, response);
-                return;
-            }
-
-            // Validar formato de email
-            if (!isValidEmail(correo)) {
-                request.setAttribute("error", "El formato del correo electrónico no es válido");
-                request.getRequestDispatcher("/WEB-INF/views/inc1/register.jsp").forward(request, response);
-                return;
-            }
-
-            //Verificar disponibilidad de correo
-            boolean correoDisponible = !usuarioRepository.existeCorreo(correo);
-            if(!correoDisponible) {
-                request.setAttribute("error", "El correo ya está registrado");
-                request.getRequestDispatcher("/WEB-INF/views/inc1/register.jsp").forward(request, response);
-                return;
-            }
-
-            //Hash de la contraseña
-            String hashedContrasena = hashearContrasena(contrasena);
-
-            //Registrar usuario
-            usuario.setNombre(nombre);
-            usuario.setCorreoElectronico(correo);
-            usuario.setContrasena(hashedContrasena);
-            usuarioRepository.save(usuario);
-
-            EmailUtil.enviarConfirmacion(correo, nombre);
+            EmailUtil.enviarConfirmacion(
+                    usuarioRegistrado.getCorreoElectronico(),
+                    usuarioRegistrado.getNombre()
+            );
 
             request.setAttribute("success", "Registro exitoso. Por favor revise su correo.");
             request.getRequestDispatcher("/WEB-INF/views/inc1/login.jsp").forward(request, response);
 
+        } catch (ServiceValidationException e) {
+            request.setAttribute("error", e.getMessage());
+            request.getRequestDispatcher("/WEB-INF/views/inc1/register.jsp").forward(request, response);
+
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error al registrar usuario", e);
             request.setAttribute("error", "Error al registrar usuario: " + e.getMessage());
             try{
                 request.getRequestDispatcher("/WEB-INF/views/inc1/register.jsp").forward(request, response);
             } catch (Exception erro) {
-                erro.printStackTrace();
+                LOGGER.log(Level.SEVERE, "Error al reenviar a la vista de registro", erro);
             }
         }
 
     }
 
-    private boolean isValidEmail(String email) {
-        String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
-        return email.matches(emailRegex);
-    }
-
-    private String hashearContrasena(String contrasena) {
-        return BCrypt.hashpw(contrasena, BCrypt.gensalt(12));
-    }
 
     // GET → mostrar registro.jsp
     @Override
@@ -135,7 +79,7 @@ public class RegisterServlet extends HttpServlet {
                             "/WEB-INF/views/inc1/register.jsp")
                     .forward(req, res);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error al mostrar la vista de registro", e);
         }
     }
 }

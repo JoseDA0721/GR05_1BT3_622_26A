@@ -6,17 +6,23 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import org.redsaberes.repository.UsuarioRepository;
-import org.redsaberes.repository.impl.UsuarioRepositoryImpl;
-import org.redsaberes.util.EmailUtil;
+import org.redsaberes.service.PasswordRecoveryService;
+import org.redsaberes.service.exception.ServiceValidationException;
+import org.redsaberes.service.impl.PasswordRecoveryServiceImpl;
 
 import java.io.IOException;
-import java.util.UUID;
+import java.io.Serial;
+import java.nio.charset.StandardCharsets;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @WebServlet("/forgot-password")
 public class ForgotPasswordServlet extends HttpServlet {
+    private static final Logger LOGGER = Logger.getLogger(ForgotPasswordServlet.class.getName());
+
+    @Serial
     private static final long serialVersionUID = 1L;
-    private UsuarioRepository usuarioRepository = new UsuarioRepositoryImpl();
+    private final PasswordRecoveryService passwordRecoveryService = new PasswordRecoveryServiceImpl();
 
     @Override
     protected void doGet(HttpServletRequest request,
@@ -26,7 +32,7 @@ public class ForgotPasswordServlet extends HttpServlet {
             request.getRequestDispatcher(
                             "/WEB-INF/views/inc1/forgot-password.jsp")
                     .forward(request, response);
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) { LOGGER.log(Level.SEVERE, "Error al mostrar la vista de recuperación", e); }
     }
     @Override
     protected void doPost(HttpServletRequest request,
@@ -35,58 +41,30 @@ public class ForgotPasswordServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         response.setContentType("text/html; charset=UTF-8");
 
-        String correo = request.getParameter("email");
-
-        // Validaciones basicas
         try {
-            //Validar que el correo no este vacio
-             if(correo==null || correo.trim().isEmpty()){
-                 request.setAttribute("error", "El correo es obligatorio");
-                 request.getRequestDispatcher("/WEB-INF/views/inc1/forgot-password.jsp").forward(request, response);
-                 return;
-             }
+            String correo = request.getParameter("email");
+            String baseUrl = request.getScheme() + "://"
+                    + request.getServerName() + ":"
+                    + request.getServerPort()
+                    + request.getContextPath();
 
-             //Validar formato de correo
-             if(!isValidEmail(correo)){
-                 request.setAttribute("error", "El correo no es válido");
-                 request.getRequestDispatcher("/WEB-INF/views/inc1/forgot-password.jsp").forward(request, response);
-                 return;
-             }
+            passwordRecoveryService.solicitarRestablecimiento(correo, baseUrl);
 
-            //Verificar si el correo existe
-            boolean correoExiste = usuarioRepository.existeCorreo(correo);
-            if(correoExiste){
-                String token = generarToken();
-
-                Long expiracion = System.currentTimeMillis() + (24 * 60 * 60 * 1000); // 24 horas
-                usuarioRepository.actualizarTokenRecuperacion(correo, token, expiracion);
-
-                String baseUrl = request.getScheme() + "://"
-                        + request.getServerName() + ":"
-                        + request.getServerPort()
-                        + request.getContextPath();
-                EmailUtil.enviarEnlaceRecuperacion(correo, token, baseUrl);
-            }
              HttpSession session = request.getSession();
              session.setAttribute("resetEmailSent", true);
              session.setAttribute("resetEmail",correo);
 
              response.sendRedirect(request.getContextPath() + "/forgot-password?sent=true&email=" +
-                     java.net.URLEncoder.encode(correo, "UTF-8"));
+                      java.net.URLEncoder.encode(correo, StandardCharsets.UTF_8));
+        }catch (ServiceValidationException e) {
+             request.setAttribute("error", e.getMessage());
+             request.getRequestDispatcher("/WEB-INF/views/inc1/forgot-password.jsp").forward(request, response);
         }catch(Exception e){
-             e.printStackTrace();
+             LOGGER.log(Level.SEVERE, "Error al enviar el correo de recuperación", e);
              request.setAttribute("error", "Error al enviar el correo");
              request.getRequestDispatcher("/WEB-INF/views/inc1/forgot-password.jsp").forward(request, response);
          }
     }
 
-    private boolean isValidEmail(String email) {
-        String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
-        return email.matches(emailRegex);
-    }
-
-    private String generarToken() {
-        return UUID.randomUUID().toString();
-    }
 
 }

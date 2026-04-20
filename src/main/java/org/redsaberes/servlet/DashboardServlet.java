@@ -6,27 +6,23 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import org.redsaberes.model.Curso;
 import org.redsaberes.model.Usuario;
-import org.redsaberes.repository.CursoRepository;
-import org.redsaberes.repository.LikeCursoRepository;
-import org.redsaberes.repository.MatchCursoRepository;
-import org.redsaberes.repository.impl.CursoRepositoryImpl;
-import org.redsaberes.repository.impl.LikeCursoRepositoryImpl;
-import org.redsaberes.repository.impl.MatchCursoRepositoryImpl;
+import org.redsaberes.service.DashboardService;
+import org.redsaberes.service.dto.DashboardDataDto;
+import org.redsaberes.service.impl.DashboardServiceImpl;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.Serial;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @WebServlet("/dashboard")
 public class DashboardServlet extends HttpServlet {
+    private static final Logger LOGGER = Logger.getLogger(DashboardServlet.class.getName());
+
+    @Serial
     private static final long serialVersionUID = 1L;
-    private final CursoRepository cursoRepository = new CursoRepositoryImpl();
-    private final LikeCursoRepository likeCursoRepository = new LikeCursoRepositoryImpl();
-    private final MatchCursoRepository matchCursoRepository = new MatchCursoRepositoryImpl();
+    private final DashboardService dashboardService = new DashboardServiceImpl();
 
     @Override
     protected void doGet(HttpServletRequest request,
@@ -41,41 +37,19 @@ public class DashboardServlet extends HttpServlet {
 
             Usuario usuario = (Usuario) session.getAttribute("usuario");
 
-            // Fetch mínimo: solo cursos del usuario, sin relaciones pesadas.
-            List<Curso> cursos = cursoRepository.findByUsuarioId(usuario.getId());
+            DashboardDataDto dashboardData = dashboardService.buildDashboardData(
+                usuario.getId(),
+                usuario.getNombre()
+            );
 
-            Map<String, Object> dashboardStats = new HashMap<>();
-            dashboardStats.put("coursesCreated", cursos.size());
-            dashboardStats.put("likesReceived", safeLong(likeCursoRepository.countByCursoPropietarioId(usuario.getId())));
-            dashboardStats.put("activeMatches", safeLong(matchCursoRepository.countByCreadorId(usuario.getId())));
-            dashboardStats.put("enrolledCourses", 0);
-
-            // Adaptador ligero para mantener compatibilidad con dashboard.jsp actual.
-            List<Map<String, Object>> userCourses = new ArrayList<>();
-            for (Curso c : cursos) {
-                Map<String, Object> item = new HashMap<>();
-                item.put("id", c.getId());
-                item.put("title", c.getTitulo());
-                item.put("imageUrl", c.getImagenPortada());
-                item.put("status", c.getEstado() != null ? c.getEstado().name() : "BORRADOR");
-                item.put("authorName", usuario.getNombre());
-                item.put("likesCount", safeLong(likeCursoRepository.countByCursoId(c.getId())));
-                item.put("matchesCount", safeLong(matchCursoRepository.countByCursoId(c.getId())));
-                userCourses.add(item);
-            }
-
-            request.setAttribute("dashboardStats", dashboardStats);
-            request.setAttribute("userCourses", userCourses);
-            request.setAttribute("recentActivity", new ArrayList<>());
+            request.setAttribute("dashboardStats", dashboardData.getDashboardStats());
+            request.setAttribute("userCourses", dashboardData.getUserCourses());
+            request.setAttribute("recentActivity", dashboardData.getRecentActivity());
 
             request.getRequestDispatcher("/WEB-INF/views/inc1/dashboard.jsp").forward(request, response);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error al cargar dashboard", e);
             response.sendRedirect(request.getContextPath() + "/login?error=1");
         }
-    }
-
-    private long safeLong(Long value) {
-        return value == null ? 0L : value;
     }
 }

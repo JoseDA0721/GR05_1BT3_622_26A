@@ -5,26 +5,17 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import org.redsaberes.model.Curso;
-import org.redsaberes.model.MatchCurso;
 import org.redsaberes.model.Usuario;
-import org.redsaberes.repository.CursoRepository;
-import org.redsaberes.repository.LikeCursoRepository;
-import org.redsaberes.repository.MatchCursoRepository;
-import org.redsaberes.repository.impl.CursoRepositoryImpl;
-import org.redsaberes.repository.impl.LikeCursoRepositoryImpl;
-import org.redsaberes.repository.impl.MatchCursoRepositoryImpl;
+import org.redsaberes.service.AcceptMatchService;
+import org.redsaberes.service.dto.AcceptMatchOutcome;
+import org.redsaberes.service.impl.AcceptMatchServiceImpl;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.Optional;
 
 @WebServlet("/accept-match")
 public class AcceptMatchServlet extends HttpServlet {
 
-    private final CursoRepository cursoRepository = new CursoRepositoryImpl();
-    private final LikeCursoRepository likeCursoRepository = new LikeCursoRepositoryImpl();
-    private final MatchCursoRepository matchCursoRepository = new MatchCursoRepositoryImpl();
+    private final AcceptMatchService acceptMatchService = new AcceptMatchServiceImpl();
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -43,29 +34,27 @@ public class AcceptMatchServlet extends HttpServlet {
             return;
         }
 
-        Optional<Curso> cursoOpt = cursoRepository.findById(cursoId);
-        if (cursoOpt.isEmpty() || cursoOpt.get().getUsuario() == null
-                || !creador.getId().equals(cursoOpt.get().getUsuario().getId())) {
+        AcceptMatchOutcome outcome = acceptMatchService.acceptMatch(
+                creador.getId(),
+                cursoId,
+                usuarioObjetivoId
+        );
+
+        if (outcome == AcceptMatchOutcome.INVALID_DATA) {
+            response.sendRedirect(request.getContextPath() + "/matches?error=invalid_data");
+            return;
+        }
+
+        if (outcome == AcceptMatchOutcome.FORBIDDEN) {
             response.sendRedirect(request.getContextPath() + "/matches?error=forbidden");
             return;
         }
 
-        if (!likeCursoRepository.existsByUsuarioAndCurso(usuarioObjetivoId, cursoId)) {
+        if (outcome == AcceptMatchOutcome.NO_LIKE) {
             response.sendRedirect(request.getContextPath() + "/matches?error=no_like");
             return;
         }
 
-        if (!matchCursoRepository.existsByCursoAndUsuario(cursoId, usuarioObjetivoId)) {
-            Usuario estudiante = new Usuario();
-            estudiante.setId(usuarioObjetivoId);
-
-            MatchCurso match = new MatchCurso();
-            match.setCurso(cursoOpt.get());
-            match.setCreador(creador);
-            match.setEstudiante(estudiante);
-            match.setFechaConfirmacion(LocalDateTime.now().toString());
-            matchCursoRepository.save(match);
-        }
 
         response.sendRedirect(request.getContextPath() + "/matches?cursoId=" + cursoId + "&success=matched");
     }

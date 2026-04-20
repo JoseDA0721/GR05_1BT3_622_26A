@@ -8,16 +8,22 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.redsaberes.model.Curso;
 import org.redsaberes.model.Usuario;
-import org.redsaberes.repository.CursoRepository;
-import org.redsaberes.repository.impl.CursoRepositoryImpl;
+import org.redsaberes.service.MyCoursesService;
+import org.redsaberes.service.impl.MyCoursesServiceImpl;
 
 import java.io.IOException;
+import java.io.Serial;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @WebServlet("/my-courses")
 public class MyCoursesServlet extends HttpServlet {
+    private static final Logger LOGGER = Logger.getLogger(MyCoursesServlet.class.getName());
+
+    @Serial
     private static final long serialVersionUID = 1L;
-    private CursoRepository cursoRepository = new CursoRepositoryImpl();
+    private final MyCoursesService myCoursesService = new MyCoursesServiceImpl();
 
     @Override
     protected void doGet(HttpServletRequest request,
@@ -36,16 +42,12 @@ public class MyCoursesServlet extends HttpServlet {
         Usuario usuario = (Usuario) session.getAttribute("usuario");
 
         try {
-            // Obtener los cursos del usuario con relaciones eager-loaded
-            // Con Hibernate, ya traemos módulos y likes automáticamente
-            List<Curso> cursos = cursoRepository.findByUsuarioIdWithRelations(usuario.getId());
+            List<Curso> cursos = myCoursesService.findMyCourses(usuario.getId());
 
-            // Ahora podemos pasar los cursos directamente al JSP
-            // Los helpers getModulosCount(), getLikesCount() etc. ya están en la clase Curso
             request.setAttribute("myCourses", cursos);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error al cargar cursos del usuario", e);
             request.setAttribute("error", "Error al cargar los cursos. Por favor, intenta más tarde.");
         }
 

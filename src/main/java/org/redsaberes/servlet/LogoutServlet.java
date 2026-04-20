@@ -3,12 +3,18 @@ package org.redsaberes.servlet;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
+import org.redsaberes.service.LogoutService;
+import org.redsaberes.service.dto.LogoutResultDto;
+import org.redsaberes.service.impl.LogoutServiceImpl;
 
 import java.io.IOException;
+import java.io.Serial;
 
 @WebServlet ("/logout")
 public class LogoutServlet extends HttpServlet {
+    @Serial
     private static final long serialVersionUID = 1L;
+    private final LogoutService logoutService = new LogoutServiceImpl();
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         processLogout(request,response);
@@ -18,23 +24,12 @@ public class LogoutServlet extends HttpServlet {
         processLogout(request,response);
     }
 
-    private void processLogout(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // Obtener seccion actual
-        HttpSession session = request.getSession();
+    private void processLogout(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        HttpSession session = request.getSession(false);
+        LogoutResultDto result = logoutService.logout(session, request.getCookies());
 
-        if(session != null){
-            session.invalidate();
-        }
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if ("email".equals(cookie.getName())) {
-                    cookie.setValue("");
-                    cookie.setMaxAge(0);
-                    cookie.setPath("/");
-                    response.addCookie(cookie);
-                }
-            }
+        if (result.getCookieToDelete() != null) {
+            response.addCookie(result.getCookieToDelete());
         }
 
         // Redirigir a la página de login con mensaje de éxito
