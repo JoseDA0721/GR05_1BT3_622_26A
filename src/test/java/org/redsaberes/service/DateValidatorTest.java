@@ -1,7 +1,8 @@
-package org.redsaberes.service.validator;
+package org.redsaberes.service;
 
 import org.junit.jupiter.api.Test;
 import org.redsaberes.service.exception.ServiceValidationException;
+import org.redsaberes.service.validator.DateValidator;
 
 import java.time.LocalDateTime;
 
