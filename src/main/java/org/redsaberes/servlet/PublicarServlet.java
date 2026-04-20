@@ -6,26 +6,25 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import org.redsaberes.model.Curso;
-import org.redsaberes.model.EstadoCurso;
-import org.redsaberes.model.Modulo;
 import org.redsaberes.model.Usuario;
-import org.redsaberes.repository.CursoRepository;
-import org.redsaberes.repository.ModuloRepository;
-import org.redsaberes.repository.impl.CursoRepositoryImpl;
-import org.redsaberes.repository.impl.ModuloRepositoryImpl;
+import org.redsaberes.service.CourseLifecycleService;
+import org.redsaberes.service.dto.CourseLifecycleOutcome;
+import org.redsaberes.service.dto.PublishCourseViewDto;
+import org.redsaberes.service.impl.CourseLifecycleServiceImpl;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Optional;
+import java.io.Serial;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @WebServlet("/publicar")
 public class PublicarServlet extends HttpServlet {
+    private static final Logger LOGGER = Logger.getLogger(PublicarServlet.class.getName());
+
+    @Serial
     private static final long serialVersionUID = 1L;
-    
-    private CursoRepository cursoRepository = new CursoRepositoryImpl();
-    private ModuloRepository moduloRepository = new ModuloRepositoryImpl();
-    
+    private final CourseLifecycleService courseLifecycleService = new CourseLifecycleServiceImpl();
+
     @Override
     protected void doGet(HttpServletRequest request, 
                          HttpServletResponse response
@@ -40,7 +39,7 @@ public class PublicarServlet extends HttpServlet {
         }
         
         try{
-            int cursoId = Integer.parseInt(idStr);
+            Integer cursoId = Integer.parseInt(idStr);
             Usuario usuario = getUsuarioSesion(request);
             if(usuario == null){
                 response.sendRedirect(
@@ -48,22 +47,16 @@ public class PublicarServlet extends HttpServlet {
                 );
                 return;
             }
-            
-            Optional<Curso> cursoOpt = cursoRepository.findById(cursoId);
-            
-            //Verificar existencia y propiedad
-            if(cursoOpt.isEmpty() ||
-            !isOwner(cursoOpt.get(), usuario)){
+
+            PublishCourseViewDto viewData = courseLifecycleService.preparePublishView(cursoId, usuario.getId());
+            if (viewData.getOutcome() == CourseLifecycleOutcome.NOT_FOUND_OR_FORBIDDEN) {
                 response.sendRedirect(
                         request.getContextPath() + "/my-courses"
                 );
                 return;
             }
 
-            Curso curso = cursoOpt.get();
-
-            //Ya publicado -> redirigir aviso
-            if(curso.getEstado() == EstadoCurso.PUBLICO){
+            if (viewData.getOutcome() == CourseLifecycleOutcome.ALREADY_PUBLIC) {
                 response.sendRedirect(
                         request.getContextPath()
                         + "/edit-course?id=" + cursoId
@@ -72,14 +65,7 @@ public class PublicarServlet extends HttpServlet {
                 return;
             }
 
-            List<Modulo> modulos = moduloRepository
-                    .findByCursoIdWithLecciones(cursoId);
-
-            boolean tieneContenido = !modulos.isEmpty()
-                    && modulos.stream().anyMatch(
-                            m -> !m.getLecciones().isEmpty());
-
-            if(!tieneContenido){
+            if (viewData.getOutcome() == CourseLifecycleOutcome.NO_CONTENT) {
                 response.sendRedirect(
                         request.getContextPath()
                         + "/edit-course?id=" + cursoId
@@ -88,8 +74,8 @@ public class PublicarServlet extends HttpServlet {
                 return;
             }
 
-            request.setAttribute("curso", curso);
-            request.setAttribute("modulos", modulos);
+            request.setAttribute("curso", viewData.getCurso());
+            request.setAttribute("modulos", viewData.getModulos());
             request.getRequestDispatcher(
                     "/WEB-INF/views/inc1/edit-course.jsp")
                     .forward(request, response);
@@ -99,7 +85,7 @@ public class PublicarServlet extends HttpServlet {
                     request.getContextPath() + "/my-courses"
             );
         } catch(Exception e){
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error al preparar vista de publicación", e);
             response.sendRedirect(
                     request.getContextPath() + "/my-courses");
         }
@@ -121,7 +107,7 @@ public class PublicarServlet extends HttpServlet {
         }
 
         try{
-            int cursoId = Integer.parseInt(idStr);
+            Integer cursoId = Integer.parseInt(idStr);
             Usuario usuario = getUsuarioSesion(request);
 
             if(usuario == null){
@@ -131,50 +117,22 @@ public class PublicarServlet extends HttpServlet {
                 return;
             }
 
-            Optional<Curso> cursoOpt = cursoRepository.
-                    findById(cursoId);
+            CourseLifecycleOutcome outcome = courseLifecycleService.publishCourse(cursoId, usuario.getId());
 
-            //Verificar existencia y propiedad
-            if(cursoOpt.isEmpty() ||
-                !isOwner(cursoOpt.get(), usuario)){
+            if (outcome == CourseLifecycleOutcome.NOT_FOUND_OR_FORBIDDEN) {
                 response.sendRedirect(
                         request.getContextPath() + "/my-courses"
                 );
                 return;
             }
 
-            Curso curso = cursoOpt.get();
-
-            List<Modulo> modulos = moduloRepository
-                    .findByCursoIdWithLecciones(cursoId);
-
-            boolean tieneContenido =
-                    !modulos.isEmpty() &&
-                            modulos.stream().anyMatch(
-                                    m -> !m.getLecciones().isEmpty());
-
-            if (!tieneContenido) {
+            if (outcome == CourseLifecycleOutcome.NO_CONTENT) {
                 response.sendRedirect(
                         request.getContextPath()
                                 + "/edit-course?id=" + cursoId
                                 + "&msg=sin-contenido");
                 return;
             }
-
-            // DS CU-07: publicarCurso()
-            // → estadoActualizado(PUBLICADO)
-            curso.setEstado(EstadoCurso.PUBLICO);
-            cursoRepository.update(curso);
-
-            System.out.println(
-                    "=== CURSO PUBLICADO ===");
-            System.out.println(
-                    "Id: " + cursoId
-                            + " | Titulo: " + curso.getTitulo());
-            System.out.println(
-                    "Estado: PUBLICO");
-            System.out.println(
-                    "======================");
 
             // DS CU-07: publicacionExitosa()
             // → mostrarMensaje("Publicación exitosa")
@@ -183,7 +141,7 @@ public class PublicarServlet extends HttpServlet {
                             + "/my-courses?success=published");
 
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error al publicar curso", e);
             response.sendRedirect(
                     request.getContextPath()
                             + "/my-courses?error=publicar");
@@ -195,15 +153,5 @@ public class PublicarServlet extends HttpServlet {
         HttpSession session = req.getSession(false);
         if (session == null) return null;
         return (Usuario) session.getAttribute("usuario");
-    }
-
-    private boolean isOwner(Curso curso,
-                            Usuario usuario) {
-        return curso != null
-                && curso.getUsuario() != null
-                && usuario != null
-                && usuario.getId() != null
-                && curso.getUsuario().getId()
-                .equals(usuario.getId());
     }
 }

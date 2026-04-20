@@ -6,19 +6,19 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import org.redsaberes.model.Curso;
-import org.redsaberes.model.EstadoCurso;
 import org.redsaberes.model.Usuario;
-import org.redsaberes.repository.CursoRepository;
-import org.redsaberes.repository.impl.CursoRepositoryImpl;
+import org.redsaberes.service.CourseLifecycleService;
+import org.redsaberes.service.dto.CourseLifecycleOutcome;
+import org.redsaberes.service.impl.CourseLifecycleServiceImpl;
 
 import java.io.IOException;
-import java.util.Optional;
+import java.io.Serial;
 
 @WebServlet("/archive-course")
 public class ArchiveCourseServlet extends HttpServlet {
+    @Serial
     private static final long serialVersionUID = 1L;
-    private final CursoRepository cursoRepository = new CursoRepositoryImpl();
+    private final CourseLifecycleService courseLifecycleService = new CourseLifecycleServiceImpl();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -38,15 +38,11 @@ public class ArchiveCourseServlet extends HttpServlet {
             return;
         }
 
-        Optional<Curso> cursoOpt = cursoRepository.findById(cursoId);
-        if (cursoOpt.isEmpty() || !isOwner(cursoOpt.get(), usuario)) {
+        CourseLifecycleOutcome outcome = courseLifecycleService.archiveCourse(cursoId, usuario.getId());
+        if (outcome != CourseLifecycleOutcome.SUCCESS) {
             response.sendRedirect(request.getContextPath() + "/my-courses?error=course_not_found");
             return;
         }
-
-        Curso curso = cursoOpt.get();
-        curso.setEstado(EstadoCurso.ARCHIVADO);
-        cursoRepository.update(curso);
 
         response.sendRedirect(request.getContextPath() + "/my-courses?success=archived");
     }
@@ -57,14 +53,5 @@ public class ArchiveCourseServlet extends HttpServlet {
         } catch (NumberFormatException ex) {
             return null;
         }
-    }
-
-    private boolean isOwner(Curso curso, Usuario usuario) {
-        return curso != null
-                && curso.getUsuario() != null
-                && usuario != null
-                && usuario.getId() != null
-                && curso.getUsuario().getId() != null
-                && curso.getUsuario().getId().equals(usuario.getId());
     }
 }
