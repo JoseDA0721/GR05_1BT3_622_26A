@@ -47,6 +47,9 @@ public class Usuario {
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Inscripcion> inscripciones = new ArrayList<>();
 
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<Resena> resenas = new ArrayList<>();
+
     public Usuario() {
     }
 
@@ -137,5 +140,42 @@ public class Usuario {
 
     public void setInscripciones(List<Inscripcion> inscripciones) {
         this.inscripciones = inscripciones;
+    }
+
+    public List<Resena> getResenas() {
+        return resenas;
+    }
+
+    public void setResenas(List<Resena> resenas) {
+        for (Resena resena : new ArrayList<>(this.resenas)) {
+            removeResena(resena);
+        }
+
+        if (resenas == null) {
+            return;
+        }
+
+        for (Resena resena : resenas) {
+            addResena(resena);
+        }
+    }
+
+    // ===== METODOS HELPER =====
+
+    public void addResena(Resena resena) {
+        if (resena == null || this.resenas.contains(resena)) {
+            return;
+        }
+        this.resenas.add(resena);
+        resena.setUsuario(this);
+    }
+
+    public void removeResena(Resena resena) {
+        if (resena == null || !this.resenas.remove(resena)) {
+            return;
+        }
+        if (resena.getUsuario() == this) {
+            resena.setUsuario(null);
+        }
     }
 }
