@@ -36,7 +36,7 @@ public class ReviewServiceImpl implements ReviewService {
         this(new ReviewRepositoryImpl(), new ReviewValidator());
     }
 
-    ReviewServiceImpl(ReviewRepository reviewRepository, ReviewValidator reviewValidator) {
+    public ReviewServiceImpl(ReviewRepository reviewRepository, ReviewValidator reviewValidator) {
         this.reviewRepository = reviewRepository;
         this.reviewValidator = reviewValidator;
     }
