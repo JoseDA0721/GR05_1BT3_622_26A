@@ -67,5 +67,8 @@
         <mapping class="org.redsaberes.model.Inscripcion"/>
         <mapping class="org.redsaberes.model.MatchCurso"/>
 
+        <!-- Reseñas -->
+        <mapping class="org.redsaberes.model.Resena"/>
+
     </session-factory>
 </hibernate-configuration>
