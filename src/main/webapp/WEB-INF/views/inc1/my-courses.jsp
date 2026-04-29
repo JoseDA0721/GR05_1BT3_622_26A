@@ -4,117 +4,13 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mis Cursos - SkillSwap</title>
-
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-
-    <style>
-        /* Gradientes personalizados */
-        .bg-gradient-main {
-            background: linear-gradient(to bottom right, #eef2ff, #ffffff, #faf5ff);
-        }
-
-        .bg-gradient-brand {
-            background: linear-gradient(to right, #4f46e5, #9333ea);
-        }
-
-        .text-gradient-brand {
-            background: linear-gradient(to right, #4f46e5, #9333ea);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        /* Animación de fade in */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .fade-in {
-            animation: fadeIn 0.5s ease-out;
-        }
-
-        /* Hover scale */
-        .hover-scale {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .hover-scale:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
-
-        /* Backdrop blur */
-        .backdrop-blur-md {
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-        }
-
-        /* Line clamp */
-        .line-clamp-2 {
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-    </style>
+    <title>Mis Cursos</title>
+    <%@ include file="../fragments/common-head.jspf" %>
 </head>
 <body class="bg-gradient-main min-h-screen">
 
 <!-- Navigation Header -->
-<nav class="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center h-16">
-
-            <!-- Logo y Navegación -->            <div class="flex items-center gap-8">
-                <a href="${pageContext.request.contextPath}/dashboard" class="flex items-center gap-2">
-                    <div class="w-10 h-10 bg-gradient-brand rounded-xl flex items-center justify-center">
-                        <i data-lucide="book-open" class="w-6 h-6 text-white"></i>
-                    </div>
-                    <span class="text-2xl font-bold text-gradient-brand">
-                            Red Saberes
-                        </span>
-                </a>
-
-                <!-- Desktop Navigation -->
-                <div class="hidden md:flex items-center gap-6">
-                    <a href="${pageContext.request.contextPath}/dashboard" class="text-gray-700 hover:text-indigo-600 transition-colors">
-                        Dashboard
-                    </a>
-                    <a href="${pageContext.request.contextPath}/explore" class="text-gray-700 hover:text-indigo-600 transition-colors">
-                        Explorar
-                    </a>
-                    <a href="${pageContext.request.contextPath}/my-courses" class="text-indigo-600 font-semibold border-b-2 border-indigo-600 pb-1">
-                        Mis Cursos
-                    </a>
-                    <a href="${pageContext.request.contextPath}/matches" class="text-gray-700 hover:text-indigo-600 transition-colors">
-                        Matches
-                    </a>
-                </div>
-            </div>
-
-            <!-- User Profile & Logout -->
-            <div class="flex items-center gap-4">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-gradient-brand rounded-full flex items-center justify-center text-white font-semibold">
-                        ${sessionScope.usuario.nombre.substring(0, 1).toUpperCase()}
-                    </div>
-                </div>
-                <a href="${pageContext.request.contextPath}/logout"
-                   class="p-2 text-gray-600 hover:text-red-600 transition-colors"
-                   title="Cerrar sesión">                    <i data-lucide="log-out" class="w-5 h-5"></i>
-                </a>
-            </div>
-        </div>
-    </div>
-</nav>
+<%@ include file="../fragments/nav.jspf" %>
 
 <!-- Main Content -->
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -259,26 +155,7 @@
 </div>
 
 <!-- Mobile Navigation (Bottom) -->
-<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2 z-50">
-    <div class="flex items-center justify-around">
-        <a href="${pageContext.request.contextPath}/dashboard" class="flex flex-col items-center gap-1 text-gray-600">
-            <i data-lucide="layout-dashboard" class="w-6 h-6"></i>
-            <span class="text-xs">Dashboard</span>
-        </a>
-        <a href="${pageContext.request.contextPath}/explore" class="flex flex-col items-center gap-1 text-gray-600">
-            <i data-lucide="search" class="w-6 h-6"></i>
-            <span class="text-xs">Explorar</span>
-        </a>
-        <a href="${pageContext.request.contextPath}/my-courses" class="flex flex-col items-center gap-1 text-indigo-600">
-            <i data-lucide="book-marked" class="w-6 h-6"></i>
-            <span class="text-xs font-semibold">Cursos</span>
-        </a>
-        <a href="${pageContext.request.contextPath}/matches" class="flex flex-col items-center gap-1 text-gray-600">
-            <i data-lucide="users" class="w-6 h-6"></i>
-            <span class="text-xs">Matches</span>
-        </a>
-    </div>
-</nav>
+<%@ include file="../fragments/mobile-bottom-nav.jspf" %>
 
 <!-- Scripts -->
 <script>

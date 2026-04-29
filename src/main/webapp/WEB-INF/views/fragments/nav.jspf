@@ -1,0 +1,96 @@
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%-- Detectar la página activa según la URL actual --%>
+<c:set var="activePage" value="${fn:toLowerCase(pageContext.request.requestURI.toString())}" />
+
+<nav class="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+
+            <!-- Logo y Navegación -->
+            <div class="flex items-center gap-8">
+                <a href="${pageContext.request.contextPath}/dashboard" class="flex items-center gap-2">
+                    <div class="w-10 h-10 bg-gradient-brand rounded-xl flex items-center justify-center">
+                        <i data-lucide="book-open" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <span class="text-2xl font-bold text-gradient-brand">
+                            Red Saberes
+                        </span>
+                </a>
+
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center gap-6">
+                    <c:choose>
+                        <c:when test="${activePage.contains('dashboard')}">
+                            <a href="${pageContext.request.contextPath}/dashboard" class="text-indigo-600 font-semibold border-b-2 border-indigo-600 pb-1 transition-colors">
+                                Dashboard
+                            </a>
+                        </c:when>
+                        <c:otherwise>
+                            <a href="${pageContext.request.contextPath}/dashboard" class="text-gray-700 hover:text-indigo-600 pb-1 transition-colors">
+                                Dashboard
+                            </a>
+                        </c:otherwise>
+                    </c:choose>
+
+                    <c:choose>
+                        <c:when test="${activePage.contains('explore')}">
+                            <a href="${pageContext.request.contextPath}/explore" class="text-indigo-600 font-semibold border-b-2 border-indigo-600 pb-1 transition-colors">
+                                Explorar
+                            </a>
+                        </c:when>
+                        <c:otherwise>
+                            <a href="${pageContext.request.contextPath}/explore" class="text-gray-700 hover:text-indigo-600 pb-1 transition-colors">
+                                Explorar
+                            </a>
+                        </c:otherwise>
+                    </c:choose>
+
+                    <c:choose>
+                        <c:when test="${activePage.contains('my-courses')}">
+                            <a href="${pageContext.request.contextPath}/my-courses" class="text-indigo-600 font-semibold border-b-2 border-indigo-600 pb-1 transition-colors">
+                                Mis Cursos
+                            </a>
+                        </c:when>
+                        <c:otherwise>
+                            <a href="${pageContext.request.contextPath}/my-courses" class="text-gray-700 hover:text-indigo-600 pb-1 transition-colors">
+                                Mis Cursos
+                            </a>
+                        </c:otherwise>
+                    </c:choose>
+
+                    <c:choose>
+                        <c:when test="${activePage.contains('matches')}">
+                            <a href="${pageContext.request.contextPath}/matches" class="text-indigo-600 font-semibold border-b-2 border-indigo-600 pb-1 transition-colors">
+                                Matches
+                            </a>
+                        </c:when>
+                        <c:otherwise>
+                            <a href="${pageContext.request.contextPath}/matches" class="text-gray-700 hover:text-indigo-600 pb-1 transition-colors">
+                                Matches
+                            </a>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
+            </div>
+
+            <!-- User Profile & Logout -->
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-gradient-brand rounded-full flex items-center justify-center text-white font-semibold">
+                        ${sessionScope.usuario.nombre.substring(0, 1).toUpperCase()}
+                    </div>
+                    <div class="hidden md:block">
+                        <div class="text-sm font-semibold text-gray-900">${sessionScope.usuario.nombre}</div>
+                        <div class="text-xs text-gray-500">${sessionScope.usuario.correoElectronico}</div>
+                    </div>
+                </div>
+                <a href="${pageContext.request.contextPath}/logout"
+                   class="p-2 text-gray-600 hover:text-red-600 transition-colors"
+                   title="Cerrar sesión">
+                    <i data-lucide="log-out" class="w-5 h-5"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
