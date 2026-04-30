@@ -48,19 +48,19 @@ public class ExploreServiceImpl implements ExploreService {
                 continue;
             }
 
-            boolean liked = likeCursoRepository.existsByUsuarioAndCurso(usuarioId, c.getId());
+            boolean liked   = likeCursoRepository.existsByUsuarioAndCurso(usuarioId, c.getId());
             boolean hasMatch = matchCursoRepository.existsByCursoAndUsuario(c.getId(), usuarioId);
 
             Map<String, Object> item = new HashMap<>();
-            item.put("id", c.getId());
-            item.put("title", safe(c.getTitulo()));
+            item.put("id",          c.getId());
+            item.put("title",       safe(c.getTitulo()));
             item.put("description", safe(c.getDescripcion()));
-            item.put("category", safe(c.getCategoria()));
-            item.put("level", safe(c.getNivelDificultad()));
-            item.put("image", safe(c.getImagenPortada()));
-            item.put("author", resolveAuthor(c));
-            item.put("liked", liked);
-            item.put("matched", hasMatch);
+            item.put("category",    safe(c.getCategoria()));
+            item.put("level",       safe(c.getNivelDificultad()));
+            item.put("image",       safe(c.getImagenPortada()));
+            item.put("author",      resolveAuthor(c));
+            item.put("liked",       liked);
+            item.put("matched",     hasMatch);
             courses.add(item);
         }
 
@@ -68,15 +68,14 @@ public class ExploreServiceImpl implements ExploreService {
     }
 
     private boolean isOwnCourse(Curso curso, Integer usuarioId) {
-        return curso.getUsuario() == null
-            || curso.getUsuario().getId() == null
-            || curso.getUsuario().getId().equals(usuarioId);
+        if (curso.getUsuario() == null || curso.getUsuario().getId() == null) {
+            return true; // datos inconsistentes → omitir
+        }
+        return curso.getUsuario().getId().equals(usuarioId);
     }
 
     private String resolveAuthor(Curso curso) {
-        if (curso.getUsuario() == null) {
-            return "Autor";
-        }
+        if (curso.getUsuario() == null) return "Autor";
         String nombre = safe(curso.getUsuario().getNombre()).trim();
         return nombre.isEmpty() ? "Autor" : nombre;
     }
@@ -87,18 +86,14 @@ public class ExploreServiceImpl implements ExploreService {
 
     private boolean matchesFilters(Curso curso, String search, String category) {
         if (!search.isEmpty()) {
-            String title = safe(curso.getTitulo()).toLowerCase(Locale.ROOT);
+            String title       = safe(curso.getTitulo()).toLowerCase(Locale.ROOT);
             String description = safe(curso.getDescripcion()).toLowerCase(Locale.ROOT);
-            String term = search.toLowerCase(Locale.ROOT);
-            if (!title.contains(term) && !description.contains(term)) {
-                return false;
-            }
+            String term        = search.toLowerCase(Locale.ROOT);
+            if (!title.contains(term) && !description.contains(term)) return false;
         }
-
         if (!category.isEmpty() && !"Todas".equalsIgnoreCase(category)) {
             return safe(curso.getCategoria()).equalsIgnoreCase(category);
         }
-
         return true;
     }
 
@@ -106,4 +101,3 @@ public class ExploreServiceImpl implements ExploreService {
         return value == null ? "" : value;
     }
 }
-
