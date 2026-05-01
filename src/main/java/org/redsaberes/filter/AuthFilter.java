@@ -15,6 +15,7 @@ import java.io.IOException;
         "/like-course",
         "/accept-match",
         "/course-material",
+        "/course-overview",
         "/create-course",
         "/edit-course",
         "/publicar",

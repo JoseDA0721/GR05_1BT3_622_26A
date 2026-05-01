@@ -34,8 +34,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             return Collections.emptyList();
         }
 
-        Session session = sessionFactory.openSession();
-        try {
+        try (Session session = sessionFactory.openSession()) {
             Query<Resena> query = session.createQuery(
                     "SELECT r FROM Resena r " +
                             "LEFT JOIN FETCH r.usuario " +
@@ -45,8 +44,36 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             );
             query.setParameter("cursoId", cursoId);
             return query.getResultList();
-        } finally {
-            session.close();
+        }
+    }
+
+    @Override
+    public Double averageRatingByCursoId(Integer cursoId) {
+        if (cursoId == null) return null;
+        try (Session session = sessionFactory.openSession()) {
+            Query<Double> query = session.createQuery(
+                    "SELECT AVG(CAST(r.estrellas AS double)) FROM Resena r " +
+                            "WHERE r.curso.id = :cursoId",
+                    Double.class
+            );
+            query.setParameter("cursoId", cursoId);
+            return query.getSingleResult();
+        }
+    }
+
+    @Override
+    public boolean existsReviewByUserIdAndCursoId(Integer usuarioId, Integer cursoId) {
+        if(usuarioId == null || cursoId == null) return false;
+        try (Session session = sessionFactory.openSession()) {
+            Query<Long> query = session.createQuery(
+                    "SELECT COUNT(r) FROM Resena r " +
+                            "WHERE r.usuario.id = :usuarioId AND r.curso.id = :cursoId",
+                    Long.class
+            );
+            query.setParameter("usuarioId", usuarioId);
+            query.setParameter("cursoId", cursoId);
+            Long count = query.uniqueResult();
+            return count != null && count > 0;
         }
     }
 }

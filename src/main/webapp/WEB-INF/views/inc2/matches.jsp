@@ -149,7 +149,7 @@
                                         </div>
                                     </div>
                                     <a
-                                            href="${pageContext.request.contextPath}/course-material?id=${match.courseId}"
+                                            href="${pageContext.request.contextPath}/course-overview?id=${match.courseId}"
                                             class="px-6 py-2 bg-white text-indigo-600 rounded-lg hover:shadow-lg transition font-semibold"
                                     >
                                         Ver Curso →

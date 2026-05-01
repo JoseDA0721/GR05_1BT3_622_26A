@@ -138,7 +138,7 @@
                             </div>
                             <span class="text-sm text-gray-600">${course.author}</span>
                         </div>
-                        <a href="${pageContext.request.contextPath}/course-material?id=${course.id}"
+                        <a href="${pageContext.request.contextPath}/course-overview?id=${course.id}"
                            class="text-sm text-indigo-600 hover:text-indigo-700 font-semibold">
                             Ver más →
                         </a>
