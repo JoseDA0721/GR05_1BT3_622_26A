@@ -18,6 +18,7 @@ public class AppInitListener implements ServletContextListener {
         try {
             // Inicializar base de datos con Hibernate
             DBInit.init();
+            DataInitializer.init();
             System.out.println("✅ Aplicación inicializada correctamente");
         } catch (Exception e) {
             System.err.println("❌ Error durante la inicialización de la aplicación");
