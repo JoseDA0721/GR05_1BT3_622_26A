@@ -49,6 +49,7 @@ public class CourseMaterialServlet extends HttpServlet {
         Integer courseId = parseInteger(request.getParameter("id"));
 
         CourseMaterialViewDto viewData = courseMaterialService.buildCourseMaterialView(usuario.getId(), courseId);
+
         if (viewData.getOutcome() == CourseMaterialViewOutcome.INVALID_COURSE) {
             response.sendRedirect(request.getContextPath() + "/explore?error=invalid_course");
             return;

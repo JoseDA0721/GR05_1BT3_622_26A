@@ -6,29 +6,15 @@ import org.redsaberes.model.Usuario;
 import org.redsaberes.repository.ReviewRepository;
 import org.redsaberes.repository.impl.ReviewRepositoryImpl;
 import org.redsaberes.service.ReviewService;
+import org.redsaberes.service.dto.ReviewCreationOutcome;
+import org.redsaberes.service.dto.ReviewCreationResult;
 import org.redsaberes.service.validator.ReviewValidator;
 
-import java.text.Normalizer;
-import java.util.Locale;
-import java.util.Set;
+import java.time.LocalDate;
 
 public class ReviewServiceImpl implements ReviewService {
     private static final int MAX_COMMENT_LENGTH = 255;
-    private static final Set<String> OFFENSIVE_WORDS = Set.of(
-            "insulto1",
-            "spam_link",
-            "puto",
-            "cabron",
-            "tonto",
-            "idiota",
-            "estupido",
-            "imbecil",
-            "payaso",
-            "inutil",
-            "basura",
-            "mentiroso",
-            "tramposo"
-    );
+
     private final ReviewRepository reviewRepository;
     private final ReviewValidator reviewValidator;
 
@@ -42,20 +28,27 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public void crearResena(Integer estrellas, String comentario, Usuario usuario, Curso curso) {
-        Resena resena = new Resena();
-
-        if (!reviewValidator.isValid(estrellas, comentario, usuario, curso)) {
-            return;
+    public ReviewCreationResult crearResena(Integer estrellas, String comentario, Usuario usuario, Curso curso) {
+        ReviewCreationOutcome validationOutcome = reviewValidator.validateForCreation(estrellas, comentario, usuario, curso);
+        if (validationOutcome != ReviewCreationOutcome.SUCCESS) {
+            return ReviewCreationResult.fromOutcome(validationOutcome);
         }
 
-        resena.setEstrellas(estrellas);
-        resena.setComentario(comentario);
-        resena.setUsuario(usuario);
-        resena.setCurso(curso);
+        try {
+            Resena resena = new Resena();
+            resena.setEstrellas(estrellas);
+            resena.setComentario(comentario != null && !comentario.trim().isEmpty() ? comentario.trim() : null);
+            resena.setUsuario(usuario);
+            resena.setFecha(LocalDate.now());
+            resena.setCurso(curso);
 
-        reviewRepository.save(resena);
+            reviewRepository.save(resena);
+            return ReviewCreationResult.success();
 
+        } catch (Exception e) {
+            // Si falla al guardar, devolver error genérico
+            return ReviewCreationResult.saveError();
+        }
     }
 
     @Override
@@ -67,24 +60,8 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public boolean containsOffensiveContent(String comment) {
-        if (comment == null) {
-            return false;
-        }
-
-        String normalizedComment = normalizeText(comment);
-
-        for (String offensiveWord : OFFENSIVE_WORDS) {
-            if (normalizedComment.contains(offensiveWord)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private String normalizeText(String text) {
-        String lowerCaseText = text.toLowerCase(Locale.ROOT);
-        String normalized = Normalizer.normalize(lowerCaseText, Normalizer.Form.NFD);
-        return normalized.replaceAll("\\p{M}", "");
+        return reviewValidator.containsOffensiveContent(comment);
     }
 }
+
+

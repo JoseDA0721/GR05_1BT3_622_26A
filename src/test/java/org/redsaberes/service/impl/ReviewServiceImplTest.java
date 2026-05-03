@@ -6,9 +6,13 @@ import org.redsaberes.model.Curso;
 import org.redsaberes.model.Resena;
 import org.redsaberes.model.Usuario;
 import org.redsaberes.repository.ReviewRepository;
+import org.redsaberes.service.dto.ReviewCreationOutcome;
+import org.redsaberes.service.dto.ReviewCreationResult;
 import org.redsaberes.service.validator.ReviewValidator;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 
@@ -29,11 +33,12 @@ class ReviewServiceImplTest {
         Integer estrellas = 4;
         String comentario = "comentario";
 
-        when(validator.isValid(estrellas, comentario, usuario, curso)).thenReturn(true);
+        when(validator.validateForCreation(estrellas, comentario, usuario, curso)).thenReturn(ReviewCreationOutcome.SUCCESS);
 
-        service.crearResena(estrellas,comentario,usuario,curso);
+        ReviewCreationResult result = service.crearResena(estrellas, comentario, usuario, curso);
 
-        Mockito.verify(validator).isValid(estrellas, comentario, usuario, curso);
+        assertTrue(result.isSuccess());
+        Mockito.verify(validator).validateForCreation(estrellas, comentario, usuario, curso);
         Mockito.verify(repo).save(any(Resena.class));
     }
 
@@ -52,11 +57,12 @@ class ReviewServiceImplTest {
         Integer estrellas = 8;
         String comentario = "comentario";
 
-        when(validator.isValid(estrellas, comentario, usuario, curso)).thenReturn(false);
+        when(validator.validateForCreation(estrellas, comentario, usuario, curso)).thenReturn(ReviewCreationOutcome.INVALID_STARS);
 
-        service.crearResena(estrellas,comentario,usuario,curso);
+        ReviewCreationResult result = service.crearResena(estrellas, comentario, usuario, curso);
 
-        Mockito.verify(validator).isValid(estrellas, comentario, usuario, curso);
+        assertEquals(ReviewCreationOutcome.INVALID_STARS, result.getOutcome());
+        Mockito.verify(validator).validateForCreation(estrellas, comentario, usuario, curso);
         Mockito.verify(repo, never()).save(any());
     }
 

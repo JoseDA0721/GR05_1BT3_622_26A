@@ -13,7 +13,7 @@ import java.util.Optional;
 
 public class CursoRepositoryImpl implements CursoRepository {
     
-    private SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
+    private final SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
     
     @Override
     public void save(Curso curso) {

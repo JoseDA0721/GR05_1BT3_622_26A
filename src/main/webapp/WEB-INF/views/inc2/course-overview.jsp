@@ -397,7 +397,7 @@
     <%-- Stats rápidas --%>
     <div class="stats-grid">
       <div class="stat-card">
-        <div class="stat-num">${totalModulos}</div>
+        <div class="stat-num">${fn:length(modulos)}</div>
         <div class="stat-label">Módulos</div>
       </div>
       <div class="stat-card">
@@ -430,7 +430,7 @@
         <div class="card-header">
           <span class="card-title">Plan de estudios</span>
           <span style="font-size:.78rem;color:var(--text-sec);">
-                        ${totalModulos} módulo<c:if test="${totalModulos != 1}">s</c:if>
+                        ${fn:length(modulos)} módulo<c:if test="${fn:length(modulos) != 1}">s</c:if>
                         · ${totalLecciones} lección<c:if test="${totalLecciones != 1}">es</c:if>
                     </span>
         </div>
@@ -735,7 +735,7 @@
                         </svg>
                         Módulos
                     </span>
-          <span class="mini-stat-val">${totalModulos}</span>
+          <span class="mini-stat-val">${fn:length(modulos)}</span>
         </div>
         <div class="mini-stat-row">
                     <span class="mini-stat-label">

@@ -19,7 +19,7 @@ class ReviewServiceTest {
     @BeforeEach
     void setUp() {
         ReviewRepository repo = Mockito.mock(ReviewRepository.class);
-        ReviewValidator validator = Mockito.mock(ReviewValidator.class);
+        ReviewValidator validator = new ReviewValidator();
         reviewService = new ReviewServiceImpl(repo, validator);
     }
 

@@ -12,6 +12,7 @@ public class CourseMaterialViewDto {
     private final List<Modulo> modulos;
     private final boolean accesoConcedido;
 
+
     public CourseMaterialViewDto(CourseMaterialViewOutcome outcome,
                                  Curso curso,
                                  List<Modulo> modulos,

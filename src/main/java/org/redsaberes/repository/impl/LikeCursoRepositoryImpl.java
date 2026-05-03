@@ -12,7 +12,7 @@ import java.util.Optional;
 
 public class LikeCursoRepositoryImpl implements LikeCursoRepository {
     
-    private SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
+    private final SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
     
     @Override
     public void save(LikeCurso likeCurso) {
