@@ -22,7 +22,7 @@ public class PasswordRecoveryServiceImpl implements PasswordRecoveryService {
         this(new UsuarioRepositoryImpl());
     }
 
-    PasswordRecoveryServiceImpl(UsuarioRepository usuarioRepository) {
+    public PasswordRecoveryServiceImpl(UsuarioRepository usuarioRepository) {
         this.usuarioRepository = usuarioRepository;
     }
 

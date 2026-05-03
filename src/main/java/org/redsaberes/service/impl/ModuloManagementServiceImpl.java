@@ -31,9 +31,9 @@ public class ModuloManagementServiceImpl implements ModuloManagementService {
         this(new CursoRepositoryImpl(), new ModuloRepositoryImpl(), new LeccionRepositoryImpl());
     }
 
-    ModuloManagementServiceImpl(CursoRepository cursoRepository,
-                                ModuloRepository moduloRepository,
-                                LeccionRepository leccionRepository) {
+    public ModuloManagementServiceImpl(CursoRepository cursoRepository,
+                                       ModuloRepository moduloRepository,
+                                       LeccionRepository leccionRepository) {
         this.cursoRepository = cursoRepository;
         this.moduloRepository = moduloRepository;
         this.leccionRepository = leccionRepository;

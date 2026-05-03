@@ -4,15 +4,7 @@ import org.redsaberes.model.Curso;
 import java.util.List;
 import java.util.Optional;
 
-public interface CursoRepository {
-    
-    // CRUD Básico
-    void save(Curso curso);
-    void update(Curso curso);
-    void delete(Integer id);
-    Optional<Curso> findById(Integer id);
-    List<Curso> findAll();
-    
+public interface CursoRepository extends GenericRepository<Curso, Integer> {
     // Búsquedas específicas
     List<Curso> findByUsuarioId(Integer usuarioId);
     List<Curso> findByCategoria(String categoria);

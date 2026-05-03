@@ -19,7 +19,7 @@ public class AuthServiceImpl implements AuthService {
         this(new UsuarioRepositoryImpl());
     }
 
-    AuthServiceImpl(UsuarioRepository usuarioRepository) {
+    public AuthServiceImpl(UsuarioRepository usuarioRepository) {
         this.usuarioRepository = usuarioRepository;
     }
 

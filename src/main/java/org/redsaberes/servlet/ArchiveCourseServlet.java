@@ -9,7 +9,6 @@ import jakarta.servlet.http.HttpSession;
 import org.redsaberes.model.Usuario;
 import org.redsaberes.service.CourseLifecycleService;
 import org.redsaberes.service.dto.CourseLifecycleOutcome;
-import org.redsaberes.service.impl.CourseLifecycleServiceImpl;
 
 import java.io.IOException;
 import java.io.Serial;
@@ -18,8 +17,7 @@ import java.io.Serial;
 public class ArchiveCourseServlet extends HttpServlet {
     @Serial
     private static final long serialVersionUID = 1L;
-    private final CourseLifecycleService courseLifecycleService = new CourseLifecycleServiceImpl();
-
+    private final CourseLifecycleService courseLifecycleService = ServiceFactory.getLifecycle();
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

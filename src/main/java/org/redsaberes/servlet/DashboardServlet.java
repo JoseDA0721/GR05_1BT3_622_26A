@@ -9,7 +9,6 @@ import jakarta.servlet.http.HttpSession;
 import org.redsaberes.model.Usuario;
 import org.redsaberes.service.DashboardService;
 import org.redsaberes.service.dto.DashboardDataDto;
-import org.redsaberes.service.impl.DashboardServiceImpl;
 
 import java.io.IOException;
 import java.io.Serial;
@@ -22,7 +21,7 @@ public class DashboardServlet extends HttpServlet {
 
     @Serial
     private static final long serialVersionUID = 1L;
-    private final DashboardService dashboardService = new DashboardServiceImpl();
+    private final DashboardService dashboardService = ServiceFactory.getDashboard();
 
     @Override
     protected void doGet(HttpServletRequest request,

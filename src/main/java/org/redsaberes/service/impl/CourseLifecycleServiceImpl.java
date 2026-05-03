@@ -24,8 +24,8 @@ public class CourseLifecycleServiceImpl implements CourseLifecycleService {
         this(new CursoRepositoryImpl(), new ModuloRepositoryImpl());
     }
 
-    CourseLifecycleServiceImpl(CursoRepository cursoRepository,
-                               ModuloRepository moduloRepository) {
+    public CourseLifecycleServiceImpl(CursoRepository cursoRepository,
+                                      ModuloRepository moduloRepository) {
         this.cursoRepository = cursoRepository;
         this.moduloRepository = moduloRepository;
     }

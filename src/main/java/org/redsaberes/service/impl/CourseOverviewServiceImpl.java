@@ -32,10 +32,10 @@ public class CourseOverviewServiceImpl implements CourseOverviewService {
                 new ReviewRepositoryImpl());
     }
 
-    CourseOverviewServiceImpl(CursoRepository cursoRepository,
-                              MatchCursoRepository matchCursoRepository,
-                              ModuloRepository moduloRepository,
-                              ReviewRepository reviewRepository) {
+    public CourseOverviewServiceImpl(CursoRepository cursoRepository,
+                                     MatchCursoRepository matchCursoRepository,
+                                     ModuloRepository moduloRepository,
+                                     ReviewRepository reviewRepository) {
         this.cursoRepository = cursoRepository;
         this.matchCursoRepository = matchCursoRepository;
         this.moduloRepository = moduloRepository;

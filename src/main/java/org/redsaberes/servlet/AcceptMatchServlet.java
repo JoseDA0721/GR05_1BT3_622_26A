@@ -8,14 +8,13 @@ import jakarta.servlet.http.HttpSession;
 import org.redsaberes.model.Usuario;
 import org.redsaberes.service.AcceptMatchService;
 import org.redsaberes.service.dto.AcceptMatchOutcome;
-import org.redsaberes.service.impl.AcceptMatchServiceImpl;
 
 import java.io.IOException;
 
 @WebServlet("/accept-match")
 public class AcceptMatchServlet extends HttpServlet {
 
-    private final AcceptMatchService acceptMatchService = new AcceptMatchServiceImpl();
+    private final AcceptMatchService acceptMatchService = ServiceFactory.getAcceptMatch();
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {

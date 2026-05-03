@@ -27,9 +27,8 @@ public class CourseOverviewServlet extends HttpServlet {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    // ✅ Inyección de dependencias via ServiceFactory (desacoplado de Impl)
-    private final CourseOverviewService courseOverviewService = ServiceFactory.getCourseOverviewService();
-    private final ReviewService         reviewService         = ServiceFactory.getReviewService();
+    private final CourseOverviewService courseOverviewService = ServiceFactory.getCourseOverview();
+    private final ReviewService         reviewService         = ServiceFactory.getReview();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -53,12 +52,12 @@ public class CourseOverviewServlet extends HttpServlet {
     }
 
     /**
-     * ✅ Válida el acceso para crear una reseña:
+     * Válida el acceso para crear una reseña:
      * - Outcome no sea OK
      * - accesoConcedido sea false
      * - yaReseno sea true
      *
-     * @return dto del curso cuando el acceso es válido; null si ya se redirigió
+     * @return dto. del curso cuando el acceso es válido; null si ya se redirigió
      */
     private CourseOverviewDto loadReviewCreationAccess(HttpServletRequest request, HttpServletResponse response,
                                                        Integer usuarioId, Integer cursoId) throws IOException {
@@ -202,6 +201,4 @@ public class CourseOverviewServlet extends HttpServlet {
         }
         return cursoId;
     }
-
-    // ...existing code...
 }

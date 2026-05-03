@@ -23,8 +23,8 @@ public class LikeCourseServiceImpl implements LikeCourseService {
         this(new CursoRepositoryImpl(), new LikeCursoRepositoryImpl());
     }
 
-    LikeCourseServiceImpl(CursoRepository cursoRepository,
-                          LikeCursoRepository likeCursoRepository) {
+    public LikeCourseServiceImpl(CursoRepository cursoRepository,
+                                 LikeCursoRepository likeCursoRepository) {
         this.cursoRepository = cursoRepository;
         this.likeCursoRepository = likeCursoRepository;
     }

@@ -25,9 +25,9 @@ public class ExploreServiceImpl implements ExploreService {
         this(new CursoRepositoryImpl(), new LikeCursoRepositoryImpl(), new MatchCursoRepositoryImpl());
     }
 
-    ExploreServiceImpl(CursoRepository cursoRepository,
-                       LikeCursoRepository likeCursoRepository,
-                       MatchCursoRepository matchCursoRepository) {
+    public ExploreServiceImpl(CursoRepository cursoRepository,
+                              LikeCursoRepository likeCursoRepository,
+                              MatchCursoRepository matchCursoRepository) {
         this.cursoRepository = cursoRepository;
         this.likeCursoRepository = likeCursoRepository;
         this.matchCursoRepository = matchCursoRepository;

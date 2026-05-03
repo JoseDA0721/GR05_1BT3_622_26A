@@ -4,12 +4,8 @@ import org.redsaberes.model.MatchCurso;
 import java.util.List;
 import java.util.Optional;
 
-public interface MatchCursoRepository {
+public interface MatchCursoRepository extends GenericRepository<MatchCurso, Integer> {
 
-    void save(MatchCurso matchCurso);
-    void delete(Integer id);
-    Optional<MatchCurso> findById(Integer id);
-    List<MatchCurso> findAll();
     List<MatchCurso> findByCursoId(Integer cursoId);
     List<MatchCurso> findByCreadorId(Integer creadorId);
     List<MatchCurso> findByEstudianteId(Integer estudianteId);

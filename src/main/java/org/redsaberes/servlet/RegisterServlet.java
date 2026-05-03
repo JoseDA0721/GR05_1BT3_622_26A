@@ -8,7 +8,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.redsaberes.model.Usuario;
 import org.redsaberes.service.UsuarioService;
 import org.redsaberes.service.exception.ServiceValidationException;
-import org.redsaberes.service.impl.UsuarioServiceImpl;
 import org.redsaberes.util.EmailUtil;
 
 import java.io.IOException;
@@ -22,7 +21,7 @@ public class RegisterServlet extends HttpServlet {
 
     @Serial
     private static final long serialVersionUID = 1L;
-    private final UsuarioService usuarioService = new UsuarioServiceImpl();
+    private final UsuarioService usuarioService = ServiceFactory.getUsuarioService();
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

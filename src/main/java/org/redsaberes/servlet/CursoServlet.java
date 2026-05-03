@@ -8,7 +8,6 @@ import org.redsaberes.model.Usuario;
 import org.redsaberes.service.CourseCreationService;
 import org.redsaberes.service.dto.CourseCreationOutcome;
 import org.redsaberes.service.dto.CourseCreationResultDto;
-import org.redsaberes.service.impl.CourseCreationServiceImpl;
 
 import java.io.IOException;
 import java.io.Serial;
@@ -26,7 +25,7 @@ public class CursoServlet extends HttpServlet {
 
     @Serial
     private static final long serialVersionUID = 1L;
-    private final CourseCreationService courseCreationService = new CourseCreationServiceImpl();
+    private final CourseCreationService courseCreationService = ServiceFactory.getCourseCreation();
 
     @Override
     protected void doGet(HttpServletRequest request,

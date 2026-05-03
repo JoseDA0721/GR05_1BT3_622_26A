@@ -4,9 +4,7 @@ import org.redsaberes.model.Resena;
 
 import java.util.List;
 
-public interface ReviewRepository {
-    void save (Resena resena);
-
+public interface ReviewRepository extends GenericRepository<Resena, Integer> {
     List<Resena> findByCursoId(Integer cursoId);
 
     Double averageRatingByCursoId(Integer cursoId);

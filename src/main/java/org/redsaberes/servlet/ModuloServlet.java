@@ -27,8 +27,7 @@ public class ModuloServlet extends HttpServlet {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    private final ModuloManagementService moduloManagementService =
-        new ModuloManagementServiceImpl();
+    private final ModuloManagementService moduloManagementService = ServiceFactory.getModulos();
 
     // GET: list (default), edit, reorder
     @Override

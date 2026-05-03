@@ -5,7 +5,6 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import org.redsaberes.service.LogoutService;
 import org.redsaberes.service.dto.LogoutResultDto;
-import org.redsaberes.service.impl.LogoutServiceImpl;
 
 import java.io.IOException;
 import java.io.Serial;
@@ -14,7 +13,7 @@ import java.io.Serial;
 public class LogoutServlet extends HttpServlet {
     @Serial
     private static final long serialVersionUID = 1L;
-    private final LogoutService logoutService = new LogoutServiceImpl();
+    private final LogoutService logoutService = ServiceFactory.getLogout();
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         processLogout(request,response);

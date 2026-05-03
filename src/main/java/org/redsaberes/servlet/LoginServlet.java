@@ -6,7 +6,6 @@ import jakarta.servlet.http.*;
 import org.redsaberes.model.Usuario;
 import org.redsaberes.service.AuthService;
 import org.redsaberes.service.exception.ServiceValidationException;
-import org.redsaberes.service.impl.AuthServiceImpl;
 
 import java.io.IOException;
 import java.io.Serial;
@@ -19,7 +18,7 @@ public class LoginServlet extends HttpServlet {
 
     @Serial
     private static final long serialVersionUID = 1L;
-    private final AuthService authService = new AuthServiceImpl();
+    private final AuthService authService = ServiceFactory.getAuthService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

@@ -4,6 +4,8 @@ import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.annotation.WebListener;
 
+import java.io.File;
+
 /**
  * Listener que se ejecuta cuando la aplicación inicia
  * Responsable de inicializar Hibernate y la base de datos
@@ -13,30 +15,32 @@ public class AppInitListener implements ServletContextListener {
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
-        System.out.println("🚀 Inicializando aplicación RedSaberes...");
-
         try {
-            // Inicializar base de datos con Hibernate
-            DBInit.init();
+            // Crear directorio de BD si no existe
+            String dbPath = resolveDbPath();
+            System.setProperty("redsaberes.db.path", dbPath);
+
+            // Inicializar Hibernate (crea/actualiza tablas automáticamente)
+            HibernateUtil.getSessionFactory();
+
             DataInitializer.init();
-            System.out.println("✅ Aplicación inicializada correctamente");
+            System.out.println("✅ Aplicación inicializada. BD: " + dbPath);
         } catch (Exception e) {
-            System.err.println("❌ Error durante la inicialización de la aplicación");
-            e.printStackTrace();
+            throw new RuntimeException("Error crítico al inicializar", e);
         }
     }
 
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
-        System.out.println("🛑 Cerrando aplicación RedSaberes...");
+        HibernateUtil.shutdown();
+    }
 
-        try {
-            // Cerrar Hibernate
-            HibernateUtil.shutdown();
-            System.out.println("✅ Aplicación cerrada correctamente");
-        } catch (Exception e) {
-            System.err.println("❌ Error al cerrar la aplicación");
-            e.printStackTrace();
-        }
+    private String resolveDbPath() {
+        String base = System.getenv("LOCALAPPDATA");
+        if (base == null) base = System.getProperty("user.home");
+        File folder = new File(base, "RedSaberes");
+        if (!folder.exists() && !folder.mkdirs())
+            throw new IllegalStateException("No se pudo crear: " + folder);
+        return new File(folder, "redsaberes.db").getAbsolutePath();
     }
 }

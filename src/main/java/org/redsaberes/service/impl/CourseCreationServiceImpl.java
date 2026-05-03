@@ -19,7 +19,7 @@ public class CourseCreationServiceImpl implements CourseCreationService {
         this(new CursoRepositoryImpl());
     }
 
-    CourseCreationServiceImpl(CursoRepository cursoRepository) {
+    public CourseCreationServiceImpl(CursoRepository cursoRepository) {
         this.cursoRepository = cursoRepository;
     }
 

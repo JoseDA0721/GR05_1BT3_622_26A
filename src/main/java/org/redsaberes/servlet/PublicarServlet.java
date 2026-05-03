@@ -5,12 +5,10 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import org.redsaberes.model.Usuario;
 import org.redsaberes.service.CourseLifecycleService;
 import org.redsaberes.service.dto.CourseLifecycleOutcome;
 import org.redsaberes.service.dto.PublishCourseViewDto;
-import org.redsaberes.service.impl.CourseLifecycleServiceImpl;
 
 import java.io.IOException;
 import java.io.Serial;
@@ -23,7 +21,7 @@ public class PublicarServlet extends HttpServlet {
 
     @Serial
     private static final long serialVersionUID = 1L;
-    private final CourseLifecycleService courseLifecycleService = new CourseLifecycleServiceImpl();
+    private final CourseLifecycleService courseLifecycleService = ServiceFactory.getLifecycle();
 
     @Override
     protected void doGet(HttpServletRequest request, 
@@ -150,8 +148,6 @@ public class PublicarServlet extends HttpServlet {
 
     private Usuario getUsuarioSesion(
             HttpServletRequest req) {
-        HttpSession session = req.getSession(false);
-        if (session == null) return null;
-        return (Usuario) session.getAttribute("usuario");
+        return ServletUtil.getUsuarioSesion(req);
     }
 }

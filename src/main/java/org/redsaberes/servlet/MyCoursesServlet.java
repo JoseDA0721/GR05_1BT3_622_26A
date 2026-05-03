@@ -9,7 +9,6 @@ import jakarta.servlet.http.HttpSession;
 import org.redsaberes.model.Curso;
 import org.redsaberes.model.Usuario;
 import org.redsaberes.service.MyCoursesService;
-import org.redsaberes.service.impl.MyCoursesServiceImpl;
 
 import java.io.IOException;
 import java.io.Serial;
@@ -23,7 +22,7 @@ public class MyCoursesServlet extends HttpServlet {
 
     @Serial
     private static final long serialVersionUID = 1L;
-    private final MyCoursesService myCoursesService = new MyCoursesServiceImpl();
+    private final MyCoursesService myCoursesService = ServiceFactory.getMyCourses();
 
     @Override
     protected void doGet(HttpServletRequest request,

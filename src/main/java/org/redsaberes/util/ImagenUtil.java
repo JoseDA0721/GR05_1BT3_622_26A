@@ -17,8 +17,7 @@ public class ImagenUtil {
         String contentType = filePart.getContentType();
         if(contentType == null
                 || !contentType.startsWith("image/")) {
-            throw new IOException("" +
-                    "El archivo debe ser una imagen");
+            throw new IOException("El archivo debe ser una imagen");
         }
 
         //Generar nombre unico

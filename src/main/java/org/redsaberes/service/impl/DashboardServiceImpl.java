@@ -26,9 +26,9 @@ public class DashboardServiceImpl implements DashboardService {
         this(new CursoRepositoryImpl(), new LikeCursoRepositoryImpl(), new MatchCursoRepositoryImpl());
     }
 
-    DashboardServiceImpl(CursoRepository cursoRepository,
-                         LikeCursoRepository likeCursoRepository,
-                         MatchCursoRepository matchCursoRepository) {
+    public DashboardServiceImpl(CursoRepository cursoRepository,
+                                LikeCursoRepository likeCursoRepository,
+                                MatchCursoRepository matchCursoRepository) {
         this.cursoRepository = cursoRepository;
         this.likeCursoRepository = likeCursoRepository;
         this.matchCursoRepository = matchCursoRepository;

@@ -16,7 +16,7 @@ public class MyCoursesServiceImpl implements MyCoursesService {
         this(new CursoRepositoryImpl());
     }
 
-    MyCoursesServiceImpl(CursoRepository cursoRepository) {
+    public MyCoursesServiceImpl(CursoRepository cursoRepository) {
         this.cursoRepository = cursoRepository;
     }
 

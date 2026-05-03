@@ -8,7 +8,6 @@ import jakarta.servlet.http.HttpSession;
 import org.redsaberes.model.Usuario;
 import org.redsaberes.service.LikeCourseService;
 import org.redsaberes.service.dto.LikeCourseOutcome;
-import org.redsaberes.service.impl.LikeCourseServiceImpl;
 
 import java.io.IOException;
 import java.io.Serial;
@@ -19,7 +18,7 @@ public class LikeCourseServlet extends HttpServlet {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    private final LikeCourseService likeCourseService = new LikeCourseServiceImpl();
+    private final LikeCourseService likeCourseService = ServiceFactory.getLikeCourse();
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {

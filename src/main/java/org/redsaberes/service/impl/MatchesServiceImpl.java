@@ -28,9 +28,9 @@ public class MatchesServiceImpl implements MatchesService {
         this(new CursoRepositoryImpl(), new LikeCursoRepositoryImpl(), new MatchCursoRepositoryImpl());
     }
 
-    MatchesServiceImpl(CursoRepository cursoRepository,
-                       LikeCursoRepository likeCursoRepository,
-                       MatchCursoRepository matchCursoRepository) {
+    public MatchesServiceImpl(CursoRepository cursoRepository,
+                              LikeCursoRepository likeCursoRepository,
+                              MatchCursoRepository matchCursoRepository) {
         this.cursoRepository = cursoRepository;
         this.likeCursoRepository = likeCursoRepository;
         this.matchCursoRepository = matchCursoRepository;

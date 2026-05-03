@@ -25,9 +25,9 @@ public class AcceptMatchServiceImpl implements AcceptMatchService {
         this(new CursoRepositoryImpl(), new LikeCursoRepositoryImpl(), new MatchCursoRepositoryImpl());
     }
 
-    AcceptMatchServiceImpl(CursoRepository cursoRepository,
-                           LikeCursoRepository likeCursoRepository,
-                           MatchCursoRepository matchCursoRepository) {
+    public AcceptMatchServiceImpl(CursoRepository cursoRepository,
+                                  LikeCursoRepository likeCursoRepository,
+                                  MatchCursoRepository matchCursoRepository) {
         this.cursoRepository = cursoRepository;
         this.likeCursoRepository = likeCursoRepository;
         this.matchCursoRepository = matchCursoRepository;

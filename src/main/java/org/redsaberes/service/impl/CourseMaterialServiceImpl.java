@@ -26,7 +26,7 @@ public class CourseMaterialServiceImpl implements CourseMaterialService {
         this(new CursoRepositoryImpl(), new MatchCursoRepositoryImpl(), new ModuloRepositoryImpl());
     }
 
-    CourseMaterialServiceImpl(CursoRepository cursoRepository,
+    public CourseMaterialServiceImpl(CursoRepository cursoRepository,
                               MatchCursoRepository matchCursoRepository,
                               ModuloRepository moduloRepository) {
         this.cursoRepository = cursoRepository;

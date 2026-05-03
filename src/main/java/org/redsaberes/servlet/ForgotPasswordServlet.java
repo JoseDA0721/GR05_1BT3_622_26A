@@ -8,7 +8,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.redsaberes.service.PasswordRecoveryService;
 import org.redsaberes.service.exception.ServiceValidationException;
-import org.redsaberes.service.impl.PasswordRecoveryServiceImpl;
 
 import java.io.IOException;
 import java.io.Serial;
@@ -22,7 +21,7 @@ public class ForgotPasswordServlet extends HttpServlet {
 
     @Serial
     private static final long serialVersionUID = 1L;
-    private final PasswordRecoveryService passwordRecoveryService = new PasswordRecoveryServiceImpl();
+    private final PasswordRecoveryService passwordRecoveryService = ServiceFactory.getRecovery();
 
     @Override
     protected void doGet(HttpServletRequest request,

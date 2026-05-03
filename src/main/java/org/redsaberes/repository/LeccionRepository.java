@@ -4,13 +4,8 @@ import org.redsaberes.model.Leccion;
 import java.util.List;
 import java.util.Optional;
 
-public interface LeccionRepository {
-    
-    void save(Leccion leccion);
-    void update(Leccion leccion);
-    void delete(Integer id);
-    Optional<Leccion> findById(Integer id);
-    List<Leccion> findAll();
+public interface LeccionRepository extends GenericRepository<Leccion, Integer>{
+
     List<Leccion> findByModuloId(Integer moduloId);
 }
 

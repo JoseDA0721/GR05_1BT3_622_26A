@@ -9,7 +9,6 @@ import jakarta.servlet.http.HttpSession;
 import org.redsaberes.model.Usuario;
 import org.redsaberes.service.MatchesService;
 import org.redsaberes.service.dto.MatchesPageDataDto;
-import org.redsaberes.service.impl.MatchesServiceImpl;
 
 import java.io.IOException;
 import java.io.Serial;
@@ -23,7 +22,7 @@ public class MatchesServlet extends HttpServlet {
 
     @Serial
     private static final long serialVersionUID = 1L;
-    private final MatchesService matchesService = new MatchesServiceImpl();
+    private final MatchesService matchesService = ServiceFactory.getMatches();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

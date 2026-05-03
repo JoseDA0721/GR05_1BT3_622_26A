@@ -8,7 +8,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.redsaberes.model.Usuario;
 import org.redsaberes.service.ExploreService;
-import org.redsaberes.service.impl.ExploreServiceImpl;
 
 import java.io.IOException;
 import java.util.List;
@@ -24,7 +23,7 @@ public class ExploreServlet extends HttpServlet {
 
     @Serial
     private static final long serialVersionUID = 1L;
-    private final ExploreService exploreService = new ExploreServiceImpl();
+    private final ExploreService exploreService = ServiceFactory.getExplore();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

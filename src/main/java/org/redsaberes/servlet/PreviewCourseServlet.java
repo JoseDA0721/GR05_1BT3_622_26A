@@ -10,7 +10,6 @@ import org.redsaberes.model.Usuario;
 import org.redsaberes.service.PreviewCourseService;
 import org.redsaberes.service.dto.PreviewCourseViewDto;
 import org.redsaberes.service.dto.PreviewCourseViewOutcome;
-import org.redsaberes.service.impl.PreviewCourseServiceImpl;
 
 import java.io.IOException;
 import java.io.Serial;
@@ -21,7 +20,7 @@ public class PreviewCourseServlet extends HttpServlet {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    private final PreviewCourseService previewCourseService = new PreviewCourseServiceImpl();
+    private final PreviewCourseService previewCourseService = ServiceFactory.getPreviewCourse();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
