@@ -1,10 +1,11 @@
-package org.redsaberes.controller;
+package org.redsaberes.service.impl;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.redsaberes.model.Curso;
 import org.redsaberes.model.Resena;
 import org.redsaberes.model.Usuario;
+import org.redsaberes.service.ControladorPerfil;
 import org.redsaberes.service.dto.VistaPerfilPublicoViewDto;
 
 import java.util.List;
@@ -16,7 +17,7 @@ class ControladorPerfilTest {
 
     @Test
     void obtenerPerfilPublico_debe_calcular_promedio_de_tres_resenas() {
-        // Mocks de reseñas con calificaciones 4, 5 y 3
+        // Mocks de resenas con calificaciones 4, 5 y 3
         Resena r1 = Mockito.mock(Resena.class);
         Resena r2 = Mockito.mock(Resena.class);
         Resena r3 = Mockito.mock(Resena.class);
@@ -25,7 +26,7 @@ class ControladorPerfilTest {
         when(r2.getEstrellas()).thenReturn(5);
         when(r3.getEstrellas()).thenReturn(3);
 
-        // Mock del curso que devuelve las tres reseñas
+        // Mock del curso que devuelve las tres resenas
         Curso cursoMock = Mockito.mock(Curso.class);
         when(cursoMock.getResenas()).thenReturn(List.of(r1, r2, r3));
 
@@ -35,10 +36,10 @@ class ControladorPerfilTest {
         usuario.setNombre("Test User");
         usuario.setCursos(List.of(cursoMock));
 
-        // Instancia del controlador (aún sin implementar la lógica)
+        // Instancia del controlador movido a la capa service
         ControladorPerfil controlador = new ControladorPerfil();
 
-        // Llamada al método bajo prueba
+        // Llamada al metodo bajo prueba
         VistaPerfilPublicoViewDto perfil = controlador.obtenerPerfilPublico(usuario);
 
         // Esperamos que el promedio sea 4.0 ( (4+5+3)/3 )

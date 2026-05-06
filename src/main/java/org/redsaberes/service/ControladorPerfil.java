@@ -1,4 +1,4 @@
-package org.redsaberes.controller;
+package org.redsaberes.service;
 
 import org.redsaberes.model.Curso;
 import org.redsaberes.model.Resena;
@@ -72,4 +72,5 @@ public class ControladorPerfil {
         return cantidadResenas == 0 ? 0.0 : (double) sumaEstrellas / cantidadResenas;
     }
 }
+
 
