@@ -1,23 +1,33 @@
 package org.redsaberes.service.impl;
 
 import org.mindrot.jbcrypt.BCrypt;
+import org.redsaberes.model.Curso;
+import org.redsaberes.model.Resena;
 import org.redsaberes.model.Usuario;
 import org.redsaberes.repository.UsuarioRepository;
-import org.redsaberes.repository.impl.UsuarioRepositoryImpl;
+import org.redsaberes.repository.MatchCursoRepository;
 import org.redsaberes.service.UsuarioService;
+import org.redsaberes.service.dto.DatosPublicosUsuarioDto;
 import org.redsaberes.service.exception.ServiceValidationException;
 import org.redsaberes.service.validator.UsuarioValidator;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 public class UsuarioServiceImpl implements UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
+    private final MatchCursoRepository matchCursoRepository;
 
-    public UsuarioServiceImpl() {
-        this(new UsuarioRepositoryImpl());
-    }
 
     public UsuarioServiceImpl(UsuarioRepository usuarioRepository) {
+        this(usuarioRepository, null);
+    }
+
+    public UsuarioServiceImpl(UsuarioRepository usuarioRepository, MatchCursoRepository matchCursoRepository) {
         this.usuarioRepository = usuarioRepository;
+        this.matchCursoRepository = matchCursoRepository;
     }
 
     @Override
@@ -48,11 +58,59 @@ public class UsuarioServiceImpl implements UsuarioService {
         return usuario;
     }
 
+    @Override
+    public DatosPublicosUsuarioDto buscarDatosPublicos(Integer usuarioId) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new IllegalArgumentException("No existe el usuario con id: " + usuarioId));
+
+        double estrellas = calcularEstrellasPublicas(usuario);
+        int matchesActivos = calcularMatchesActivos(usuario);
+
+        return new DatosPublicosUsuarioDto(
+                usuario.getId(),
+                usuario.getNombre(),
+                estrellas,
+                matchesActivos
+        );
+    }
+
     private String normalizar(String valor) {
         return valor == null ? null : valor.trim();
     }
 
     private String hashearContrasena(String contrasena) {
         return BCrypt.hashpw(contrasena, BCrypt.gensalt(12));
+    }
+
+    private double calcularEstrellasPublicas(Usuario usuario) {
+        List<Curso> cursos = usuario.getCursos() == null ? List.of() : usuario.getCursos();
+        List<Resena> resenas = new ArrayList<>();
+
+        for (Curso curso : cursos) {
+            if (curso != null && curso.getResenas() != null) {
+                resenas.addAll(curso.getResenas());
+            }
+        }
+
+        int suma = 0;
+        int cantidad = 0;
+        for (Resena resena : resenas) {
+            if (resena != null && resena.getEstrellas() != null) {
+                suma += resena.getEstrellas();
+                cantidad++;
+            }
+        }
+
+        return cantidad == 0 ? 0.0 : (double) suma / cantidad;
+    }
+
+    private int calcularMatchesActivos(Usuario usuario) {
+        if (matchCursoRepository != null && usuario.getId() != null) {
+            long comoCreador = Optional.ofNullable(matchCursoRepository.countByCreadorId(usuario.getId())).orElse(0L);
+            long comoEstudiante = Optional.ofNullable(matchCursoRepository.countByEstudianteId(usuario.getId())).orElse(0L);
+            return Math.toIntExact(comoCreador + comoEstudiante);
+        }
+
+        return 0;
     }
 }

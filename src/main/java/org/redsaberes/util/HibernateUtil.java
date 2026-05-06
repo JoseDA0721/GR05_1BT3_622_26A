@@ -2,6 +2,7 @@ package org.redsaberes.util;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
+import java.io.File;
 
 /**
  * Utility class para inicializar y gestionar la SessionFactory de Hibernate.
@@ -9,7 +10,35 @@ import org.hibernate.cfg.Configuration;
  * que se utiliza en todo el proyecto.
  */
 public class HibernateUtil {
+    static {
+        // Asegurar que el directorio de la BD existe ANTES de inicializar Hibernat
+        ensureDatabaseDirectoryExists();
+    }
+
     private static final SessionFactory sessionFactory = buildSessionFactory();
+
+    /**
+     * Asegura que el directorio para la base de datos SQLite existe
+     */
+    private static void ensureDatabaseDirectoryExists() {
+        try {
+            String userHome = System.getProperty("user.home");
+            File dbDir = new File(userHome, ".redsaberes");
+
+            if (!dbDir.exists()) {
+                if (dbDir.mkdirs()) {
+                    System.out.println("✅ Directorio de BD creado: " + dbDir.getAbsolutePath());
+                } else {
+                    System.err.println("⚠️ No se pudo crear el directorio: " + dbDir.getAbsolutePath());
+                }
+            } else {
+                System.out.println("✅ Directorio de BD existe: " + dbDir.getAbsolutePath());
+            }
+        } catch (Exception e) {
+            System.err.println("⚠️ Error al verificar/crear directorio de BD: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 
     /**
      * Construye la SessionFactory desde el archivo de configuración hibernate.cfg.xml

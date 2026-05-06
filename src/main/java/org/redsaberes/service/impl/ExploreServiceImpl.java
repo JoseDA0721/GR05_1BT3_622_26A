@@ -59,6 +59,8 @@ public class ExploreServiceImpl implements ExploreService {
             item.put("level",       safe(c.getNivelDificultad()));
             item.put("image",       safe(c.getImagenPortada()));
             item.put("author",      resolveAuthor(c));
+            // Exponer id del autor para enlazar a su perfil público
+            item.put("authorId",    c.getUsuario() != null ? c.getUsuario().getId() : null);
             item.put("liked",       liked);
             item.put("matched",     hasMatch);
             courses.add(item);

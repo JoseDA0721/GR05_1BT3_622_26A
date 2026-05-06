@@ -51,6 +51,23 @@
         <p class="text-gray-600">Descubre cursos que te interesen y da "Like" para expresar tu interés</p>
     </div>
 
+    <!-- Mostrar mensaje de error si la carga de perfil falló -->
+    <c:if test="${param.error == 'profile_load' || param.error == 'user_not_found' || requestScope.profileLoadError}">
+        <div class="mb-6 p-4 rounded-lg bg-red-50 border border-red-100 text-red-800">
+            <strong>Error al cargar el perfil público.</strong>
+            <c:choose>
+                <c:when test="${param.error == 'user_not_found'}">El usuario solicitado no existe.</c:when>
+                <c:when test="${requestScope.profileLoadError}">
+                    Ocurrió un error interno mientras se cargaba el perfil.
+                    <c:if test="${not empty requestScope.profileLoadErrorMessage}">
+                        Detalle: ${requestScope.profileLoadErrorMessage}
+                    </c:if>
+                </c:when>
+                <c:otherwise>Intente nuevamente más tarde.</c:otherwise>
+            </c:choose>
+        </div>
+    </c:if>
+
     <!-- Búsqueda y filtro -->
     <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-8">
         <form method="GET" action="${pageContext.request.contextPath}/explore"
@@ -130,14 +147,31 @@
                     <p class="text-sm text-gray-600 mb-4 line-clamp-2">${course.description}</p>
 
                     <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-500
-                                        rounded-full flex items-center justify-center
-                                        text-white text-xs font-semibold">
-                                    ${course.author.substring(0,1)}
-                            </div>
-                            <span class="text-sm text-gray-600">${course.author}</span>
-                        </div>
+                                <div class="flex items-center gap-2">
+                                    <c:choose>
+                                        <c:when test="${not empty course.authorId}">
+                                            <a href="${pageContext.request.contextPath}/profile?id=${course.authorId}"
+                                               class="flex items-center gap-2 no-underline">
+                                                <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-500
+                                                            rounded-full flex items-center justify-center
+                                                            text-white text-xs font-semibold">
+                                                    ${course.author.substring(0,1)}
+                                                </div>
+                                                <span class="text-sm text-gray-600 hover:text-indigo-600 font-medium">${course.author}</span>
+                                            </a>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <div class="flex items-center gap-2">
+                                                <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-500
+                                                            rounded-full flex items-center justify-center
+                                                            text-white text-xs font-semibold">
+                                                    ${course.author.substring(0,1)}
+                                                </div>
+                                                <span class="text-sm text-gray-600">${course.author}</span>
+                                            </div>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </div>
                         <a href="${pageContext.request.contextPath}/course-overview?id=${course.id}"
                            class="text-sm text-indigo-600 hover:text-indigo-700 font-semibold">
                             Ver más →

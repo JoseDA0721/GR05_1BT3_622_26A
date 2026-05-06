@@ -75,7 +75,7 @@
             Enseña lo que sabes y accede a cursos creados por otros miembros de la comunidad.
         </p>
         <div class="flex items-center justify-center gap-4 flex-wrap">
-            <a href="${pageContext.request.contextPath}//register" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:shadow-xl transition-all inline-flex items-center gap-2">
+            <a href="${pageContext.request.contextPath}/register" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:shadow-xl transition-all inline-flex items-center gap-2">
                 Comenzar Gratis
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
