@@ -1,15 +1,15 @@
 package org.redsaberes.service.impl;
 
-import org.redsaberes.model.Curso;
-import org.redsaberes.model.EstadoCurso;
-import org.redsaberes.model.LikeCurso;
-import org.redsaberes.model.Usuario;
+import jakarta.servlet.ServletException;
+import org.redsaberes.model.*;
 import org.redsaberes.repository.CursoRepository;
 import org.redsaberes.repository.LikeCursoRepository;
 import org.redsaberes.repository.impl.CursoRepositoryImpl;
 import org.redsaberes.repository.impl.LikeCursoRepositoryImpl;
 import org.redsaberes.service.LikeCourseService;
+import org.redsaberes.service.NotificacionService;
 import org.redsaberes.service.dto.LikeCourseOutcome;
+import org.redsaberes.service.exception.ServiceValidationException;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -18,15 +18,20 @@ public class LikeCourseServiceImpl implements LikeCourseService {
 
     private final CursoRepository cursoRepository;
     private final LikeCursoRepository likeCursoRepository;
-
-    public LikeCourseServiceImpl() {
-        this(new CursoRepositoryImpl(), new LikeCursoRepositoryImpl());
-    }
+    private final NotificacionService notificacionService;
 
     public LikeCourseServiceImpl(CursoRepository cursoRepository,
-                                 LikeCursoRepository likeCursoRepository) {
+                                 LikeCursoRepository likeCursoRepository,
+                                 NotificacionService notificacionService) {
         this.cursoRepository = cursoRepository;
         this.likeCursoRepository = likeCursoRepository;
+        this.notificacionService = notificacionService;
+    }
+
+    // Backwards-compatible constructor
+    public LikeCourseServiceImpl(CursoRepository cursoRepository,
+                                 LikeCursoRepository likeCursoRepository) {
+        this(cursoRepository, likeCursoRepository, null);
     }
 
     @Override
@@ -54,6 +59,14 @@ public class LikeCourseServiceImpl implements LikeCourseService {
             likeCurso.setUsuario(usuario);
             likeCurso.setFecha(LocalDateTime.now().toString());
             likeCursoRepository.save(likeCurso);
+            try{
+                System.out.println("Creando notificación para usuario " + curso.getUsuario().getNombre() + " por like de usuario " + usuario.getNombre() + " en curso " + curso.getTitulo());
+                // Parámetros correctos: usuarioReceptor (dueño del curso), usuarioEmisor (quien dio like)
+                notificacionService.createNotification(curso.getUsuario(), usuario, curso, TipoNotificacion.LIKE_RECIBIDO);
+            } catch (ServiceValidationException e){
+                // Loguear el error pero no interrumpir el flujo de la aplicación
+                System.err.println("Error al crear notificación: " + e.getMessage());
+            }
         }
 
         return LikeCourseOutcome.LIKED;

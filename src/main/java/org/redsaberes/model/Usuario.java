@@ -38,22 +38,63 @@ public class Usuario {
 
     // ===== RELACIONES =====
 
-    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(
+            mappedBy = "usuario",
+            cascade = CascadeType.ALL,
+            fetch = FetchType.LAZY,
+            orphanRemoval = true
+    )
     private List<Curso> cursos = new ArrayList<>();
 
-    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(
+            mappedBy = "usuario",
+            cascade = CascadeType.ALL,
+            fetch = FetchType.LAZY,
+            orphanRemoval = true
+    )
     private List<LikeCurso> likes = new ArrayList<>();
 
-    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(
+            mappedBy = "usuario",
+            cascade = CascadeType.ALL,
+            fetch = FetchType.LAZY,
+            orphanRemoval = true
+    )
     private List<Inscripcion> inscripciones = new ArrayList<>();
 
-    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(
+            mappedBy = "usuario",
+            cascade = CascadeType.ALL,
+            fetch = FetchType.LAZY,
+            orphanRemoval = true
+    )
     private List<Resena> resenas = new ArrayList<>();
+
+    @OneToMany(
+            mappedBy = "usuarioReceptor",
+            cascade = CascadeType.ALL,
+            fetch = FetchType.LAZY,
+            orphanRemoval = true
+    )
+    private List<Notificacion> notificacionesRecibidas = new ArrayList<>();
+
+    @OneToMany(
+            mappedBy = "usuarioEmisor",
+            cascade = CascadeType.ALL,
+            fetch = FetchType.LAZY
+    )
+    private List<Notificacion> notificacionesGeneradas = new ArrayList<>();
 
     public Usuario() {
     }
 
-    public Usuario(Integer id, String nombre, String correoElectronico, String contrasena, String tokenSesion) {
+    public Usuario(
+            Integer id,
+            String nombre,
+            String correoElectronico,
+            String contrasena,
+            String tokenSesion
+    ) {
         this.id = id;
         this.nombre = nombre;
         this.correoElectronico = correoElectronico;
@@ -61,7 +102,6 @@ public class Usuario {
         this.tokenSesion = tokenSesion;
     }
 
-    // ...existing getters and setters...
     public Integer getId() {
         return id;
     }
@@ -176,6 +216,56 @@ public class Usuario {
         }
         if (resena.getUsuario() == this) {
             resena.setUsuario(null);
+        }
+    }
+
+    public List<Notificacion> getNotificacionesRecibidas() {
+        return notificacionesRecibidas;
+    }
+
+    public void setNotificacionesRecibidas(List<Notificacion> notificacionesRecibidas) {
+        this.notificacionesRecibidas = notificacionesRecibidas;
+    }
+
+    public List<Notificacion> getNotificacionesGeneradas() {
+        return notificacionesGeneradas;
+    }
+
+    public void setNotificacionesGeneradas(List<Notificacion> notificacionesGeneradas) {
+        this.notificacionesGeneradas = notificacionesGeneradas;
+    }
+
+    public void addNotificacion(Notificacion notificacion) {
+        if (notificacion == null || this.notificacionesRecibidas.contains(notificacion)) {
+            return;
+        }
+        this.notificacionesRecibidas.add(notificacion);
+        notificacion.setUsuarioReceptor(this);
+    }
+
+    public void removeNotificacion(Notificacion notificacion) {
+        if (notificacion == null || !this.notificacionesRecibidas.remove(notificacion)) {
+            return;
+        }
+        if (notificacion.getUsuarioReceptor() == this) {
+            notificacion.setUsuarioReceptor(null);
+        }
+    }
+
+    public void addNotificacionGenerada(Notificacion notificacion) {
+        if (notificacion == null || this.notificacionesGeneradas.contains(notificacion)) {
+            return;
+        }
+        this.notificacionesGeneradas.add(notificacion);
+        notificacion.setUsuarioEmisor(this);
+    }
+
+    public void removeNotificacionGenerada(Notificacion notificacion) {
+        if (notificacion == null || !this.notificacionesGeneradas.remove(notificacion)) {
+            return;
+        }
+        if (notificacion.getUsuarioEmisor() == this) {
+            notificacion.setUsuarioEmisor(null);
         }
     }
 }

@@ -53,6 +53,9 @@ public class Curso {
     @OneToMany(mappedBy = "curso", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Resena> resenas = new ArrayList<>();
 
+    @OneToMany(mappedBy = "curso", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<Notificacion> notificaciones = new ArrayList<>();
+
     public Curso() {
     }
 
@@ -180,6 +183,24 @@ public class Curso {
         }
     }
 
+    public List<Notificacion> getNotificaciones() {
+        return notificaciones;
+    }
+
+    public void setNotificaciones(List<Notificacion> notificaciones) {
+        for (Notificacion notificacion : new ArrayList<>(this.notificaciones)) {
+            removeNotificacion(notificacion);
+        }
+
+        if (notificaciones == null) {
+            return;
+        }
+
+        for (Notificacion notificacion : notificaciones) {
+            addNotificacion(notificacion);
+        }
+    }
+
     // ===== MÉTODOS HELPER =====
 
     public Integer getModulosCount() {
@@ -198,6 +219,10 @@ public class Curso {
         return resenas.size();
     }
 
+    public Integer getNotificacionesCount() {
+        return notificaciones.size();
+    }
+
     public void addResena(Resena resena) {
         if (resena == null || this.resenas.contains(resena)) {
             return;
@@ -214,4 +239,22 @@ public class Curso {
             resena.setCurso(null);
         }
     }
+
+    public void addNotificacion(Notificacion notificacion) {
+        if (notificacion == null || this.notificaciones.contains(notificacion)) {
+            return;
+        }
+        this.notificaciones.add(notificacion);
+        notificacion.setCurso(this);
+    }
+
+    public void removeNotificacion(Notificacion notificacion) {
+        if (notificacion == null || !this.notificaciones.remove(notificacion)) {
+            return;
+        }
+        if (notificacion.getCurso() == this) {
+            notificacion.setCurso(null);
+        }
+    }
+
 }

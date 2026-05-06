@@ -2,6 +2,11 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%-- Detectar la página activa según la URL actual --%>
 <c:set var="activePage" value="${fn:toLowerCase(pageContext.request.requestURI.toString())}" />
+<c:set var="notificacionesNoLeidas" value="${requestScope.notificacionesNoLeidas}" />
+<c:set var="totalNotificaciones" value="${requestScope.totalNotificaciones}" />
+<c:if test="${empty totalNotificaciones}">
+    <c:set var="totalNotificaciones" value="0" />
+</c:if>
 
 <nav class="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -76,6 +81,56 @@
 
             <!-- User Profile & Logout -->
             <div class="flex items-center gap-4">
+                <div class="relative">
+                    <button id="notifToggle"
+                            type="button"
+                            class="relative p-2 text-gray-600 hover:text-indigo-600 transition-colors"
+                            title="Notificaciones"
+                            aria-expanded="false"
+                            aria-controls="notifMenu">
+                        <i data-lucide="bell" class="w-5 h-5"></i>
+
+                        <c:if test="${totalNotificaciones > 0}">
+                            <span class="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
+                                ${totalNotificaciones}
+                            </span>
+                        </c:if>
+                    </button>
+
+                    <div id="notifMenu"
+                         class="hidden absolute right-0 mt-2 w-96 max-h-96 overflow-y-auto bg-white border border-gray-200 rounded-xl shadow-lg z-50">
+                        <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+                            <h3 class="text-sm font-semibold text-gray-900">Notificaciones</h3>
+                            <span class="text-xs text-gray-500">${totalNotificaciones} no leída(s)</span>
+                        </div>
+
+                        <c:choose>
+                            <c:when test="${not empty notificacionesNoLeidas}">
+                                <ul class="divide-y divide-gray-100">
+                                    <c:forEach var="n" items="${notificacionesNoLeidas}">
+                                        <li class="px-4 py-3 hover:bg-gray-50">
+                                            <div class="text-sm text-gray-800">${n.descripcion}</div>
+                                            <div class="mt-1 text-xs text-gray-500">${n.fechaCreacion}</div>
+
+                                            <form method="post" action="${pageContext.request.contextPath}/notificaciones" class="mt-2">
+                                                <input type="hidden" name="notificacionId" value="${n.id}" />
+                                                <button type="submit"
+                                                        class="text-xs font-medium text-indigo-600 hover:text-indigo-800">
+                                                    Marcar como leída
+                                                </button>
+                                            </form>
+                                        </li>
+                                    </c:forEach>
+                                </ul>
+                            </c:when>
+                            <c:otherwise>
+                                <div class="px-4 py-6 text-sm text-gray-500 text-center">
+                                    No tienes notificaciones no leídas.
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+                </div>
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 bg-gradient-brand rounded-full flex items-center justify-center text-white font-semibold">
                         ${sessionScope.usuario.nombre.substring(0, 1).toUpperCase()}
@@ -94,3 +149,108 @@
         </div>
     </div>
 </nav>
+
+<script>
+  (function () {
+    const toggle = document.getElementById('notifToggle');
+    const menu = document.getElementById('notifMenu');
+    if (!toggle || !menu) return;
+
+    toggle.addEventListener('click', function (e) {
+      e.stopPropagation();
+      menu.classList.toggle('hidden');
+      toggle.setAttribute('aria-expanded', String(!menu.classList.contains('hidden')));
+    });
+
+    document.addEventListener('click', function (e) {
+      if (!menu.contains(e.target) && !toggle.contains(e.target)) {
+        menu.classList.add('hidden');
+        toggle.setAttribute('aria-expanded', 'false');
+      }
+    });
+  })();
+
+  // Polling cada 30 segundos para actualizar notificaciones no leídas
+  (function () {
+    const POLLING_INTERVAL = 30000; // 30 segundos
+    const API_URL = '${pageContext.request.contextPath}/api/notificaciones/unread';
+
+    function fetchUnreadCount() {
+      // No hacer polling si la pestaña está oculta
+      if (document.hidden) return;
+
+      fetch(API_URL, {
+        method: 'GET',
+        credentials: 'same-origin',
+        headers: {
+          'Accept': 'application/json'
+        }
+      })
+        .then(response => {
+          if (response.status === 401) {
+            // Sesión expirada, no reintentar
+            console.log('Sesión expirada');
+            return null;
+          }
+          if (!response.ok) throw new Error('Error en respuesta');
+          return response.json();
+        })
+        .then(data => {
+          if (!data) return;
+          updateNotificationBadge(data.total);
+          // Opcional: actualizar lista de items
+          if (data.items) {
+            updateNotificationItems(data.items);
+          }
+        })
+        .catch(error => {
+          console.warn('Error en polling de notificaciones:', error);
+          // No romper el flujo por errores de red
+        });
+    }
+
+    function updateNotificationBadge(total) {
+      const badge = document.querySelector('#notifToggle span');
+      if (total > 0) {
+        if (badge) {
+          badge.textContent = total;
+          badge.parentElement.style.display = 'block';
+        } else {
+          // Crear badge si no existe
+          const newBadge = document.createElement('span');
+          newBadge.className = 'absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center';
+          newBadge.textContent = total;
+          document.getElementById('notifToggle').appendChild(newBadge);
+        }
+      } else {
+        // Ocultar badge si total es 0
+        if (badge) {
+          badge.parentElement.style.display = 'none';
+        }
+      }
+    }
+
+    function updateNotificationItems(items) {
+      // Actualizar el contador en el header del dropdown
+      const counterSpan = document.querySelector('#notifMenu .text-xs.text-gray-500');
+      if (counterSpan) {
+        counterSpan.textContent = items.length + ' no leída(s)';
+      }
+
+      // Actualizar lista de notificaciones (opcional para mantener sincronizado sin cerrar dropdown)
+      // Por ahora dejamos que el usuario cierre y reabra el dropdown para ver cambios
+    }
+
+    // Iniciar polling cuando el documento esté listo
+    fetchUnreadCount(); // Primera llamada inmediata
+    setInterval(fetchUnreadCount, POLLING_INTERVAL);
+
+    // Pausar polling si la pestaña se vuelve invisible
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden) {
+        // Pestaña activa nuevamente, hacer una consulta inmediata
+        fetchUnreadCount();
+      }
+    });
+  })();
+</script>

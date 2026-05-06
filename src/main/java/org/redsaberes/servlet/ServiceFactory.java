@@ -8,12 +8,12 @@ import org.redsaberes.service.validator.ReviewValidator;
 
 /**
  * ServiceFactory: Centraliza la creación e inyección de dependencias.
- *
+ * <p>
  * Ventajas:
  * - Desacopla los servlets de las implementaciones concretas (Impl)
  * - Punto único para cambiar tipos de implementación o agregar mocking en tests
  * - Si en futuro migran a Spring, adaptar aquí es trivial
- *
+ * <p>
  * Patrón: Service Locator / Factory
  */
 // ServiceFactory.java — versión completa
@@ -27,6 +27,8 @@ public final class ServiceFactory {
     private static final ModuloRepository moduloRepo   = new ModuloRepositoryImpl();
     private static final LeccionRepository leccionRepo = new LeccionRepositoryImpl();
     private static final ReviewRepository reviewRepo   = new ReviewRepositoryImpl();
+    private static final NotificacionRepository notificacionRepo = new NotificacionRepositoryImpl();
+
 
     // Servicios — todos construidos con los repos de arriba
     private static final LogoutService logoutService = new LogoutServiceImpl();
@@ -42,8 +44,9 @@ public final class ServiceFactory {
             new DashboardServiceImpl(cursoRepo, likeRepo, matchRepo);
     private static final ExploreService exploreService =
             new ExploreServiceImpl(cursoRepo, likeRepo, matchRepo);
+    private static final NotificacionService notificacionService = new NotificacionServiceImpl(notificacionRepo);
     private static final LikeCourseService likeCourseService =
-            new LikeCourseServiceImpl(cursoRepo, likeRepo);
+            new LikeCourseServiceImpl(cursoRepo, likeRepo, notificacionService);
     private static final MatchesService matchesService =
             new MatchesServiceImpl(cursoRepo, likeRepo, matchRepo);
     private static final AcceptMatchService acceptMatchService =
@@ -80,6 +83,7 @@ public final class ServiceFactory {
     public static PasswordRecoveryService getRecovery() { return recoveryService; }
     public static LogoutService getLogout() { return logoutService; }
     public static PreviewCourseService getPreviewCourse() { return previewCourseService; }
+    public static NotificacionService getNotificacionService() { return notificacionService; }
 
     private ServiceFactory() { throw new AssertionError(); }
 }

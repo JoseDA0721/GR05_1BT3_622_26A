@@ -70,5 +70,8 @@
         <!-- Reseñas -->
         <mapping class="org.redsaberes.model.Resena"/>
 
+        <!-- Notificaciones -->
+        <mapping class="org.redsaberes.model.Notificacion"/>
+
     </session-factory>
 </hibernate-configuration>
