@@ -2,6 +2,7 @@ package org.redsaberes.repository.impl;
 
 import org.hibernate.Session;
 import org.hibernate.query.Query;
+import org.redsaberes.model.EstadoNotificacion;
 import org.redsaberes.model.Notificacion;
 import org.redsaberes.repository.NotificacionRepository;
 
@@ -32,6 +33,18 @@ public class NotificacionRepositoryImpl extends GenericRepositoryImpl<Notificaci
             query.setParameter("cursoId", cursoId);
             Long count = query.uniqueResult();
             return count > 0;
+        }
+    }
+
+    @Override
+    public List<Notificacion> findUnreadByUsuarioReceptorId(Integer usuarioId) {
+        try(Session session = getSessionFactory().openSession()){
+            Query<Notificacion> query = session.createQuery(
+                    "FROM Notificacion n WHERE n.usuarioReceptor.id = :usuarioId AND n.estado = :estado",
+                    Notificacion.class);
+            query.setParameter("usuarioId", usuarioId);
+            query.setParameter("estado", EstadoNotificacion.NO_LEIDO);
+            return query.getResultList();
         }
     }
 
