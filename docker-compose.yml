@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  redsaberes:
+    image: joseda0721/redsaberes:2.0
+    container_name: redsaberes
+    restart: unless-stopped
+    ports:
+      - "8080:8080"   # host:container -> accede en http://localhost:8080
+    volumes:
+      - redsaberes_data:/root/.redsaberes
+    networks:
+      - redsaberes_net
+
+  jenkins:
+    image: joseda0721/jenkins-server:lts
+    container_name: jenkins
+    restart: unless-stopped
+    ports:
+      - "9090:8080"   # host:container -> accede a Jenkins en http://localhost:9090
+      - "50000:50000" # agente JNLP
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock # opcional, útil si Jenkins ejecuta contenedores
+    environment:
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+    networks:
+      - redsaberes_net
+
+volumes:
+  redsaberes_data:
+  jenkins_home:
+
+networks:
+  redsaberes_net:
+    driver: bridge
+

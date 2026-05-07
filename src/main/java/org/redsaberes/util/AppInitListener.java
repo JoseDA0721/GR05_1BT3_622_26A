@@ -25,6 +25,8 @@ public class AppInitListener implements ServletContextListener {
 
             DataInitializer.init();
             System.out.println("✅ Aplicación inicializada. BD: " + dbPath);
+            String publicUrl = System.getenv().getOrDefault("RED_SABERES_PUBLIC_URL", "http://localhost:8080/");
+            System.out.println("✅ Aplicación inicializada. Accesible en " + publicUrl);
         } catch (Exception e) {
             throw new RuntimeException("Error crítico al inicializar", e);
         }
