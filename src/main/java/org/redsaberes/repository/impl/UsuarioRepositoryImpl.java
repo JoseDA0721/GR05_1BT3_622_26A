@@ -9,7 +9,14 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+
+// Luego en el metodo lo usas así:
+//Query<Usuario> query = session.createQuery(FIND_BY_CORREO_HQL, Usuario.class);
+
 public class UsuarioRepositoryImpl extends GenericRepositoryImpl<Usuario, Integer> implements UsuarioRepository {
+
+    private static final String FIND_BY_CORREO_HQL = "FROM Usuario u WHERE u.correoElectronico = :correo";
+    private static final String EXISTE_CORREO_HQL = "SELECT COUNT(u) FROM Usuario u WHERE u.correoElectronico = :correo";
 
     private static final Logger logger =
             Logger.getLogger(UsuarioRepositoryImpl.class.getName());
@@ -22,9 +29,7 @@ public class UsuarioRepositoryImpl extends GenericRepositoryImpl<Usuario, Intege
     @Override
     public Optional<Usuario> findByCorreo(String correo) {
         try (Session session = getSessionFactory().openSession()) {
-            Query<Usuario> query = session.createQuery(
-                    "FROM Usuario u WHERE u.correoElectronico = :correo",
-                    Usuario.class
+            Query<Usuario> query = session.createQuery(FIND_BY_CORREO_HQL, Usuario.class
             );
             query.setParameter("correo", correo);
             Usuario usuario = query.uniqueResult();
@@ -35,10 +40,7 @@ public class UsuarioRepositoryImpl extends GenericRepositoryImpl<Usuario, Intege
     @Override
     public boolean existeCorreo(String correo) {
         try (Session session = getSessionFactory().openSession()) {
-            Query<Long> query = session.createQuery(
-                    "SELECT COUNT(u) FROM Usuario u WHERE u.correoElectronico = :correo",
-                    Long.class
-            );
+            Query<Long> query = session.createQuery(EXISTE_CORREO_HQL, Long.class);
             query.setParameter("correo", correo);
             Long count = query.uniqueResult();
             return count != null && count > 0;
