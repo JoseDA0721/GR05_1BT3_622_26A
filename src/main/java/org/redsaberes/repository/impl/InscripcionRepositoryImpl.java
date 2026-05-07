@@ -6,6 +6,7 @@ import org.redsaberes.model.Inscripcion;
 import org.redsaberes.repository.InscripcionRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public class InscripcionRepositoryImpl extends GenericRepositoryImpl<Inscripcion, Integer> implements InscripcionRepository {
     
@@ -48,5 +49,17 @@ public class InscripcionRepositoryImpl extends GenericRepositoryImpl<Inscripcion
             return query.uniqueResult();
         }
     }
-}
 
+    @Override
+    public Optional<Inscripcion> findByUsuarioIdAndCursoId(Integer usuarioId, Integer cursoId) {
+        try (Session session = getSessionFactory().openSession()) {
+            Query<Inscripcion> query = session.createQuery(
+                    "FROM Inscripcion i WHERE i.usuario.id = :usuarioId AND i.curso.id = :cursoId",
+                    Inscripcion.class
+            );
+            query.setParameter("usuarioId", usuarioId);
+            query.setParameter("cursoId", cursoId);
+            return query.uniqueResultOptional();
+        }
+    }
+}
