@@ -4,6 +4,7 @@ import org.redsaberes.model.*;
 import org.redsaberes.repository.NotificacionRepository;
 import org.redsaberes.service.NotificacionService;
 import org.redsaberes.service.exception.ServiceValidationException;
+import org.redsaberes.service.validator.NotificationValidator;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -25,28 +26,7 @@ public class NotificacionServiceImpl implements NotificacionService {
             Curso curso,
             TipoNotificacion tipo) throws ServiceValidationException {
         // Validaciones
-        if (usuarioEmisor == null) {
-            throw new ServiceValidationException("Usuario emisor no válido");
-        }
-        if  (usuarioReceptor == null) {
-            throw new ServiceValidationException("Usuario receptor no válido");
-        }
-
-        if(curso == null) {
-            throw new ServiceValidationException("Curso no válido");
-        }
-
-        if(curso.getUsuario()==null){
-            throw new ServiceValidationException("Curso sin propietario");
-        }
-
-        if(curso.getUsuario().equals(usuarioEmisor)){
-            throw new ServiceValidationException("El usuario emisor no puede ser el dueño del curso");
-        }
-
-        if(notificacionRepository.existsByUsuarioEmisorAndCurso(usuarioEmisor.getId(), curso.getId())){
-            throw new ServiceValidationException("No se puede duplicar notificaciones");
-        }
+        NotificationValidator.validateNotificationCreation(usuarioReceptor, usuarioEmisor, curso, notificacionRepository);
 
         // Crear la notificación
         Notificacion notificacion = new Notificacion();
@@ -60,6 +40,7 @@ public class NotificacionServiceImpl implements NotificacionService {
         return notificacion;
     }
 
+
     @Override
     public void markAsRead(Notificacion notificacion){
         notificacion.setEstado(EstadoNotificacion.LEIDO);
@@ -68,14 +49,7 @@ public class NotificacionServiceImpl implements NotificacionService {
 
     @Override
     public List<Notificacion> getUnread(Integer usuarioReceptorId){
-        List<Notificacion> allNotificaciones = notificacionRepository.findByUsuarioReceptorId(usuarioReceptorId);
-        List<Notificacion> unreadNotificaciones = new ArrayList<>();
-        for(Notificacion notificacion : allNotificaciones){
-            if(notificacion.getEstado().equals(EstadoNotificacion.NO_LEIDO)){
-                unreadNotificaciones.add(notificacion);
-            }
-        }
-        return unreadNotificaciones;
+        return notificacionRepository.findUnreadByUsuarioReceptorId(usuarioReceptorId);
     }
 
     @Override

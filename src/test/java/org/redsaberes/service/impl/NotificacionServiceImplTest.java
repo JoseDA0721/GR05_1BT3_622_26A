@@ -14,6 +14,7 @@ import org.redsaberes.service.exception.ServiceValidationException;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -203,7 +204,11 @@ class NotificacionServiceImplTest {
             List<Notificacion> repoNotifications,
             int expectedUnreadNotifications
     ){
-        when(notificacionRepository.findByUsuarioReceptorId(usuarioReceptor.getId())).thenReturn(repoNotifications);
+        List<Notificacion> repoUnread = repoNotifications.stream()
+                .filter(n -> n.getEstado() == EstadoNotificacion.NO_LEIDO)
+                .collect(Collectors.toList());
+
+        when(notificacionRepository.findUnreadByUsuarioReceptorId(usuarioReceptor.getId())).thenReturn(repoUnread);
 
         List<Notificacion> unreadNotifications = notificacionService.getUnread(usuarioReceptor.getId());
 
@@ -211,7 +216,7 @@ class NotificacionServiceImplTest {
         assertTrue(unreadNotifications.stream()
                 .allMatch(n -> n.getEstado() == EstadoNotificacion.NO_LEIDO));
 
-        verify(notificacionRepository, times(1)).findByUsuarioReceptorId(usuarioReceptor.getId());
+        verify(notificacionRepository, times(1)).findUnreadByUsuarioReceptorId(usuarioReceptor.getId());
     }
 
     private static Stream<Arguments> provideUnreadNotificationsCases() {

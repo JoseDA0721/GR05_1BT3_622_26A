@@ -60,8 +60,6 @@ public class LikeCourseServiceImpl implements LikeCourseService {
             likeCurso.setFecha(LocalDateTime.now().toString());
             likeCursoRepository.save(likeCurso);
             try{
-                System.out.println("Creando notificación para usuario " + curso.getUsuario().getNombre() + " por like de usuario " + usuario.getNombre() + " en curso " + curso.getTitulo());
-                // Parámetros correctos: usuarioReceptor (dueño del curso), usuarioEmisor (quien dio like)
                 notificacionService.createNotification(curso.getUsuario(), usuario, curso, TipoNotificacion.LIKE_RECIBIDO);
             } catch (ServiceValidationException e){
                 // Loguear el error pero no interrumpir el flujo de la aplicación
