@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   redsaberes:
-    image: joseda0721/redsaberes:2.0
+    image: joseda0721/redsaberes:4.0
     container_name: redsaberes
     restart: unless-stopped
     ports:
