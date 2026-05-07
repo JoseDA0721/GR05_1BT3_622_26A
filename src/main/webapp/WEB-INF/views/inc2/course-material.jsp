@@ -550,10 +550,10 @@
         <div class="progress-wrap">
             <div class="progress-label">
                 <span>Progreso del curso</span>
-                <span class="progress-pct" id="progressPct">0%</span>
+                <span class="progress-pct" id="progressPct">${progresoGuardado != null ? progresoGuardado : 0}%</span>
             </div>
             <div class="progress-track">
-                <div class="progress-fill" id="progressFill" style="width:0%"></div>
+                <div class="progress-fill" id="progressFill" style="width:${progresoGuardado != null ? progresoGuardado : 0}%"></div>
             </div>
         </div>
 
@@ -859,6 +859,8 @@
             const id = allBtns[currentIdx]?.id.replace('btn-', '');
             if (!id) return;
             completed.add(id);
+            currentProgress += progressPerLesson;
+            currentProgress = Math.min(100, currentProgress);
 
             /* Visual del botón de la lección en sidebar */
             const btn = allBtns[currentIdx];
@@ -909,14 +911,36 @@
         }
 
         /* ── Progreso ── */
+        const cursoId = ${curso.id};
+        let currentProgress = ${progresoGuardado != null ? progresoGuardado : 0};
+        const totalLessons = allBtns.length;
+        const progressPerLesson = totalLessons > 0 ? 100 / totalLessons : 0;
+
         function updateProgress() {
-            const total  = allBtns.length;
-            if (!total) return;
-            const pct    = Math.round((completed.size / total) * 100);
-            const fill   = document.getElementById('progressFill');
-            const label  = document.getElementById('progressPct');
-            if (fill)  fill.style.width = pct + '%';
-            if (label) label.textContent = pct + '%';
+            const fill = document.getElementById('progressFill');
+            const label = document.getElementById('progressPct');
+            if (fill) fill.style.width = currentProgress + '%';
+            if (label) label.textContent = Math.round(currentProgress) + '%';
+            saveProgressToServer(currentProgress);
+        }
+
+        function saveProgressToServer(progressValue) {
+            fetch('${pageContext.request.contextPath}/update-progress', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `cursoId=${cursoId}&progreso=${progressValue}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    console.error('Error saving progress:', data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
         }
 
         /* ── Mobile sidebar ── */

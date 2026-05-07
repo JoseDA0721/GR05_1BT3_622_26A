@@ -13,6 +13,9 @@ public class Inscripcion {
     @Column
     private String fecha;
 
+    @Column
+    private Integer progreso = 0;
+
     // ===== RELACIONES =====
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -49,6 +52,14 @@ public class Inscripcion {
 
     public void setFecha(String fecha) {
         this.fecha = fecha;
+    }
+
+    public Integer getProgreso() {
+        return progreso;
+    }
+
+    public void setProgreso(Integer progreso) {
+        this.progreso = progreso;
     }
 
     public Usuario getUsuario() {
