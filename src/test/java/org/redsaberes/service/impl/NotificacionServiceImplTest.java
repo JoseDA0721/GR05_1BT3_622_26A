@@ -29,9 +29,10 @@ class NotificacionServiceImplTest {
     private Usuario usuarioReceptor;
     private Curso curso;
     private Notificacion notificacion;
+    private Notificacion notificacion2;
 
     @BeforeEach
-    void setUp(){
+    void setUp() {
         MockitoAnnotations.openMocks(this);
         notificacionService = new NotificacionServiceImpl(notificacionRepository);
 
@@ -62,6 +63,20 @@ class NotificacionServiceImplTest {
         notificacion.setTipo(TipoNotificacion.LIKE_RECIBIDO);
         notificacion.setEstado(EstadoNotificacion.NO_LEIDO);
         notificacion.setFechaCreacion(LocalDate.now());
+
+        notificacion2 = new Notificacion();
+        notificacion2.setId(2);
+        notificacion2.setUsuarioReceptor(usuarioReceptor);
+        notificacion2.setUsuarioEmisor(usuarioEmisor);
+        notificacion2.setCurso(curso);
+        notificacion2.setTipo(TipoNotificacion.REVIEW_RECIBIDA);
+        notificacion2.setEstado(EstadoNotificacion.NO_LEIDO);
+        notificacion2.setFechaCreacion(LocalDate.now());
+
+        when(notificacionRepository
+                .existsByUsuarioEmisorAndCursoAndTipo(
+                        anyInt(), anyInt(), any(TipoNotificacion.class)))
+                .thenReturn(false);
     }
 
     @Test
@@ -102,9 +117,10 @@ class NotificacionServiceImplTest {
 
     @Test
     void given_duplicate_like_when_notify_then_do_not_create_second_notification() {
-        when(notificacionRepository.existsByUsuarioEmisorAndCurso(
+        when(notificacionRepository.existsByUsuarioEmisorAndCursoAndTipo(
                 usuarioEmisor.getId(),
-                curso.getId()
+                curso.getId(),
+                TipoNotificacion.LIKE_RECIBIDO
         )).thenReturn(true);
 
         ServiceValidationException exception = assertThrows(ServiceValidationException.class, () ->
@@ -121,16 +137,16 @@ class NotificacionServiceImplTest {
     }
 
     @Test
-    void given_null_emisor_when_notify_then_throw_or_return_error(){
+    void given_null_emisor_when_notify_then_throw_or_return_error() {
         usuarioEmisor = null;
 
         ServiceValidationException exception = assertThrows(ServiceValidationException.class, () ->
-            notificacionService.createNotification(
-                usuarioReceptor,
-                usuarioEmisor,
-                curso,
-                TipoNotificacion.LIKE_RECIBIDO
-            )
+                notificacionService.createNotification(
+                        usuarioReceptor,
+                        usuarioEmisor,
+                        curso,
+                        TipoNotificacion.LIKE_RECIBIDO
+                )
         );
 
         assertEquals("Usuario emisor no válido", exception.getMessage());
@@ -138,33 +154,33 @@ class NotificacionServiceImplTest {
     }
 
     @Test
-    void given_null_receptor_when_notify_then_throw_error(){
+    void given_null_receptor_when_notify_then_throw_error() {
         usuarioReceptor = null;
 
         ServiceValidationException exception = assertThrows(ServiceValidationException.class, () ->
-            notificacionService.createNotification(
-                usuarioReceptor,
-                usuarioEmisor,
-                curso,
-                TipoNotificacion.LIKE_RECIBIDO
-            )
+                notificacionService.createNotification(
+                        usuarioReceptor,
+                        usuarioEmisor,
+                        curso,
+                        TipoNotificacion.LIKE_RECIBIDO
+                )
         );
 
         assertEquals("Usuario receptor no válido", exception.getMessage());
         verify(notificacionRepository, never()).save(any(Notificacion.class));
     }
 
-     @Test
-    void given_null_curso_when_notify_then_throw_or_return_error(){
+    @Test
+    void given_null_curso_when_notify_then_throw_or_return_error() {
         curso = null;
 
         ServiceValidationException exception = assertThrows(ServiceValidationException.class, () ->
-            notificacionService.createNotification(
-                usuarioReceptor,
-                usuarioEmisor,
-                curso,
-                TipoNotificacion.LIKE_RECIBIDO
-            )
+                notificacionService.createNotification(
+                        usuarioReceptor,
+                        usuarioEmisor,
+                        curso,
+                        TipoNotificacion.LIKE_RECIBIDO
+                )
         );
 
         assertEquals("Curso no válido", exception.getMessage());
@@ -176,12 +192,12 @@ class NotificacionServiceImplTest {
         curso.setUsuario(null);
 
         ServiceValidationException exception = assertThrows(ServiceValidationException.class, () ->
-            notificacionService.createNotification(
-                usuarioReceptor,
-                usuarioEmisor,
-                curso,
-                TipoNotificacion.LIKE_RECIBIDO
-            )
+                notificacionService.createNotification(
+                        usuarioReceptor,
+                        usuarioEmisor,
+                        curso,
+                        TipoNotificacion.LIKE_RECIBIDO
+                )
         );
 
         assertEquals("Curso sin propietario", exception.getMessage());
@@ -189,7 +205,7 @@ class NotificacionServiceImplTest {
     }
 
     @Test
-    void given_notification_when_mark_as_read_then_estado_changes_to_leido(){
+    void given_notification_when_mark_as_read_then_estado_changes_to_leido() {
         assertEquals(EstadoNotificacion.NO_LEIDO, notificacion.getEstado());
 
         notificacionService.markAsRead(notificacion);
@@ -203,7 +219,7 @@ class NotificacionServiceImplTest {
     void given_receptorId_when_getUnread_then_returns_only_unread_notifications(
             List<Notificacion> repoNotifications,
             int expectedUnreadNotifications
-    ){
+    ) {
         List<Notificacion> repoUnread = repoNotifications.stream()
                 .filter(n -> n.getEstado() == EstadoNotificacion.NO_LEIDO)
                 .collect(Collectors.toList());
@@ -258,6 +274,39 @@ class NotificacionServiceImplTest {
                 Arguments.of(List.of(noLeida1, noLeida2), 2),
                 Arguments.of(List.of(leida), 0)
         );
+    }
+
+    @Test
+    void given_valid_review_when_notify_then_create_notification_review() throws ServiceValidationException {
+        ArgumentCaptor<Notificacion> notificacionCaptor = ArgumentCaptor.forClass(Notificacion.class);
+
+        notificacionService.createNotification(
+                usuarioReceptor,   // receptor = dueño del curso
+                usuarioEmisor,     // emisor = quien escribe la reseña
+                curso,
+                TipoNotificacion.REVIEW_RECIBIDA
+        );
+
+        verify(notificacionRepository, times(1)).save(notificacionCaptor.capture());
+        Notificacion saved = notificacionCaptor.getValue();
+        assertEquals(usuarioReceptor.getId(), saved.getUsuarioReceptor().getId());
+        assertEquals(usuarioEmisor.getId(), saved.getUsuarioEmisor().getId());
+        assertEquals(curso.getId(), saved.getCurso().getId());
+        assertEquals(TipoNotificacion.REVIEW_RECIBIDA, saved.getTipo());
+        assertEquals(EstadoNotificacion.NO_LEIDO, saved.getEstado());
+        assertNotNull(saved.getFechaCreacion());
+    }
+
+    @Test
+    void give_like_notification_when_get_description_then_ok(){
+        String result = notificacionService.getDescripcion(notificacion);
+        assertEquals("Emisor te dio like en tu curso 'Curso de Test'", result);
+    }
+
+    @Test
+    void give_review_notification_when_get_description_then_ok() {
+        String result = notificacionService.getDescripcion(notificacion2);
+        assertEquals("Emisor te dejó una reseña en tu curso 'Curso de Test'", result);
     }
 
 }

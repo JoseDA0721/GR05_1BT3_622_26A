@@ -19,6 +19,7 @@ import java.io.IOException;
         "/edit-course",
         "/publicar",
         "/archive-course",
+        "/profile/edit",
         "/my-courses",
         "/curso/*",
         "/modulo/*",
@@ -26,7 +27,8 @@ import java.io.IOException;
         "/miscursos",
         "/like/*",
         "/match/*",
-        "/inscripcion/*"
+        "/inscripcion/*",
+        "/change-password"
 })
 public class AuthFilter implements Filter {
 

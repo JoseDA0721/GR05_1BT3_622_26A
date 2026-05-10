@@ -32,6 +32,10 @@ public interface UsuarioService {
                                          String contrasena, String confirmarContrasena)
             throws ServiceValidationException;
 
+    Usuario actualizarPerfilBasico(Integer usuarioId,
+                                   String nombre,
+                                   String correo) throws ServiceValidationException;
+
     DatosPublicosUsuarioDto buscarDatosPublicos(Integer usuarioId);
 }
 

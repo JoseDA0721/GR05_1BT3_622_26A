@@ -29,7 +29,6 @@ public final class ServiceFactory {
     private static final ReviewRepository reviewRepo   = new ReviewRepositoryImpl();
     private static final NotificacionRepository notificacionRepo = new NotificacionRepositoryImpl();
 
-
     // Servicios — todos construidos con los repos de arriba
     private static final LogoutService logoutService = new LogoutServiceImpl();
     private static final AuthService authService =
@@ -60,11 +59,12 @@ public final class ServiceFactory {
     private static final CourseMaterialServiceImpl courseMaterialService =
             new CourseMaterialServiceImpl(cursoRepo, matchRepo, moduloRepo);
     private static final ReviewService reviewService =
-            new ReviewServiceImpl(reviewRepo, new ReviewValidator());
+            new ReviewServiceImpl(reviewRepo, new ReviewValidator(),notificacionService);
     private static final PasswordRecoveryService recoveryService =
             new PasswordRecoveryServiceImpl(usuarioRepo);
     private static final PreviewCourseService previewCourseService = new PreviewCourseServiceImpl();
-
+    private static final ChangePasswordService changePasswordService =
+            new ChangePasswordServiceImpl(usuarioRepo);
 
     public static AuthService getAuthService()               { return authService; }
     public static UsuarioService getUsuarioService()          { return usuarioService; }
@@ -84,7 +84,8 @@ public final class ServiceFactory {
     public static LogoutService getLogout() { return logoutService; }
     public static PreviewCourseService getPreviewCourse() { return previewCourseService; }
     public static NotificacionService getNotificacionService() { return notificacionService; }
-
+    public static ChangePasswordService getChangePassword() { return changePasswordService;
+    }
     private ServiceFactory() { throw new AssertionError(); }
 }
 

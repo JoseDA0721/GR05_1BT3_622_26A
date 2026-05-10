@@ -2,12 +2,16 @@ package org.redsaberes.service.impl;
 
 import org.redsaberes.model.Curso;
 import org.redsaberes.model.Resena;
+import org.redsaberes.model.TipoNotificacion;
 import org.redsaberes.model.Usuario;
+import org.redsaberes.repository.NotificacionRepository;
 import org.redsaberes.repository.ReviewRepository;
 import org.redsaberes.repository.impl.ReviewRepositoryImpl;
+import org.redsaberes.service.NotificacionService;
 import org.redsaberes.service.ReviewService;
 import org.redsaberes.service.dto.ReviewCreationOutcome;
 import org.redsaberes.service.dto.ReviewCreationResult;
+import org.redsaberes.service.exception.ServiceValidationException;
 import org.redsaberes.service.validator.ReviewValidator;
 
 import java.time.LocalDate;
@@ -17,14 +21,13 @@ public class ReviewServiceImpl implements ReviewService {
 
     private final ReviewRepository reviewRepository;
     private final ReviewValidator reviewValidator;
+    private final NotificacionService notificacionService;
 
-    public ReviewServiceImpl() {
-        this(new ReviewRepositoryImpl(), new ReviewValidator());
-    }
 
-    public ReviewServiceImpl(ReviewRepository reviewRepository, ReviewValidator reviewValidator) {
+    public ReviewServiceImpl(ReviewRepository reviewRepository, ReviewValidator reviewValidator, NotificacionService notificacionService) {
         this.reviewRepository = reviewRepository;
         this.reviewValidator = reviewValidator;
+        this.notificacionService = notificacionService;
     }
 
     @Override
@@ -41,8 +44,12 @@ public class ReviewServiceImpl implements ReviewService {
             resena.setUsuario(usuario);
             resena.setFecha(LocalDate.now());
             resena.setCurso(curso);
-
             reviewRepository.save(resena);
+            try{
+                notificacionService.createNotification(curso.getUsuario(), usuario, curso, TipoNotificacion.REVIEW_RECIBIDA);
+            }catch(ServiceValidationException e){
+                System.err.println("Error al crear notificación: " + e.getMessage());
+            }
             return ReviewCreationResult.success();
 
         } catch (Exception e) {

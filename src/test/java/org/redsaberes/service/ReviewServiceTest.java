@@ -20,7 +20,8 @@ class ReviewServiceTest {
     void setUp() {
         ReviewRepository repo = Mockito.mock(ReviewRepository.class);
         ReviewValidator validator = new ReviewValidator();
-        reviewService = new ReviewServiceImpl(repo, validator);
+        NotificacionService notificacionService = Mockito.mock(NotificacionService.class);
+        reviewService = new ReviewServiceImpl(repo, validator, notificacionService);
     }
 
     @Test

@@ -247,6 +247,19 @@ public class DataInitializer {
         resena4.setCurso(cursoJavaScript);
         reviewRepo.save(resena4);
 
+        // ── Notificaciones de reseñas ──
+        // Se crean para validar el nuevo flujo REVIEW_RECIBIDA en UI y API.
+        NotificacionRepositoryImpl notificacionRepo = new NotificacionRepositoryImpl();
+
+        notificacionRepo.save(new Notificacion(ana, carlos, cursoPython,
+                TipoNotificacion.REVIEW_RECIBIDA, LocalDate.now()));
+        notificacionRepo.save(new Notificacion(carlos, ana, cursoDiseno,
+                TipoNotificacion.REVIEW_RECIBIDA, LocalDate.now()));
+        notificacionRepo.save(new Notificacion(maria, diego, cursoMarketing,
+                TipoNotificacion.REVIEW_RECIBIDA, LocalDate.now()));
+        notificacionRepo.save(new Notificacion(diego, maria, cursoJavaScript,
+                TipoNotificacion.REVIEW_RECIBIDA, LocalDate.now()));
+
         // ── Inscripciones con progreso variado ──
         InscripcionRepositoryImpl inscripcionRepo = new InscripcionRepositoryImpl();
 
@@ -290,9 +303,7 @@ public class DataInitializer {
         isc8.setProgreso(30);
         inscripcionRepo.save(isc8);
 
-        // ── Notificaciones (muchas para visualizar el sistema) ──
-        NotificacionRepositoryImpl notificacionRepo = new NotificacionRepositoryImpl();
-
+        // ── Notificaciones de likes ──
         // Ana recibe notificaciones de likes
         notificacionRepo.save(new Notificacion(ana, carlos, cursoPython,
                 TipoNotificacion.LIKE_RECIBIDO, LocalDate.now()));
@@ -384,14 +395,15 @@ public class DataInitializer {
         System.out.println("   • Carlos: Marketing 50% ⏳");
         System.out.println("   • Diego: Data Science 30% ⏳");
 
-        System.out.println("\n🔔 NOTIFICACIONES (12 total):");
-        System.out.println("   • Ana: 4 notificaciones (1 leída ✅, 3 sin leer)");
-        System.out.println("   • Carlos: 2 notificaciones (sin leer)");
-        System.out.println("   • María: 2 notificaciones (sin leer)");
-        System.out.println("   • Diego: 3 notificaciones (1 leída ✅, 2 sin leer)");
+        System.out.println("\n🔔 NOTIFICACIONES (15 total):");
+        System.out.println("   • Ana: 5 notificaciones (1 leída ✅, 4 sin leer)");
+        System.out.println("   • Carlos: 3 notificaciones (sin leer)");
+        System.out.println("   • María: 3 notificaciones (sin leer)");
+        System.out.println("   • Diego: 4 notificaciones (1 leída ✅, 3 sin leer)");
 
         System.out.println("\n🎯 FUNCIONALIDADES DEMOSTRABLES:");
         System.out.println("   ✅ Notificaciones de likes con badge");
+        System.out.println("   ✅ Notificaciones de reseñas (REVIEW_RECIBIDA)");
         System.out.println("   ✅ Barra de progreso en inscripciones");
         System.out.println("   ✅ Múltiples cursos por usuario");
         System.out.println("   ✅ Matches confirmados");
