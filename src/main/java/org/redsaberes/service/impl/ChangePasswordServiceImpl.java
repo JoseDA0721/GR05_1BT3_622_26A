@@ -40,12 +40,13 @@ public class ChangePasswordServiceImpl implements ChangePasswordService {
             throw new ServiceValidationException("Las contraseñas no coinciden");
         }
         if (!PasswordValidator.esSegura(nuevaContrasena)) {
-            throw new ServiceValidationException("La nueva contraseña no cumple con los requisitos de seguridad");
+            throw new ServiceValidationException(
+                    "La contraseña debe tener al menos 8 caracteres, una mayúscula y un número");
         }
 
         Optional<Usuario> usuarioOpt = usuarioRepository.findById(usuarioId);
         if (usuarioOpt.isEmpty()) {
-            throw new ServiceValidationException("No se encontró el usuario");
+            throw new ServiceValidationException("Usuario no encontrado");
         }
 
         Usuario usuario = usuarioOpt.get();
