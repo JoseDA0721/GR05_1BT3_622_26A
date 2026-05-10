@@ -4,6 +4,7 @@ import org.hibernate.Session;
 import org.hibernate.query.Query;
 import org.redsaberes.model.EstadoNotificacion;
 import org.redsaberes.model.Notificacion;
+import org.redsaberes.model.TipoNotificacion;
 import org.redsaberes.repository.NotificacionRepository;
 
 import java.util.List;
@@ -20,6 +21,24 @@ public class NotificacionRepositoryImpl extends GenericRepositoryImpl<Notificaci
                     "FROM Notificacion n WHERE n.usuarioReceptor.id = :usuarioId", Notificacion.class);
             query.setParameter("usuarioId", usuarioId);
             return query.getResultList();
+        }
+    }
+
+    @Override
+    public boolean existsByUsuarioEmisorAndCursoAndTipo(Integer usuarioEmisorId, Integer cursoId, TipoNotificacion tipoNotificacion) {
+        try(Session session = getSessionFactory().openSession()){
+            Query<Long> query = session.createQuery(
+                    "SELECT COUNT(n) " +
+                            "FROM Notificacion n " +
+                            "WHERE n.usuarioEmisor.id = :usuarioEmisorId " +
+                            "AND n.curso.id = :cursoId " +
+                            "AND n.tipo = :tipoNotificacion",
+                    Long.class);
+            query.setParameter("usuarioEmisorId", usuarioEmisorId);
+            query.setParameter("cursoId", cursoId);
+            query.setParameter("tipoNotificacion", tipoNotificacion);
+            Long count = query.uniqueResult();
+            return count > 0;
         }
     }
 

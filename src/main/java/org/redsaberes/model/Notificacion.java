@@ -160,6 +160,10 @@ public class Notificacion {
                     String.format("%s te aceptó en su curso '%s'",
                             usuarioEmisor.getNombre(),
                             curso.getTitulo());
+            case REVIEW_RECIBIDA ->
+                    String.format("%s te dejó una reseña en tu curso '%s'",
+                            usuarioEmisor.getNombre(),
+                            curso.getTitulo());
         };
     }
 }

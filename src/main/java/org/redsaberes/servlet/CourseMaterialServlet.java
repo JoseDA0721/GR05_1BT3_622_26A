@@ -33,12 +33,8 @@ public class CourseMaterialServlet extends HttpServlet {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    private final CourseMaterialService courseMaterialService = new CourseMaterialServiceImpl();
-    private final ReviewService reviewService = new ReviewServiceImpl();
+    private final CourseMaterialService courseMaterialService = ServiceFactory.getCourseMaterial();
     private final CourseProgressService courseProgressService = new CourseProgressServiceImpl();
-    private final ReviewRepository reviewRepository = new ReviewRepositoryImpl();
-    private final CursoRepository cursoRepository = new CursoRepositoryImpl();
-    private final UsuarioRepository usuarioRepository = new UsuarioRepositoryImpl();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -69,76 +65,6 @@ public class CourseMaterialServlet extends HttpServlet {
                 ? "/WEB-INF/views/inc2/course-content.jsp"
                 : "/WEB-INF/views/inc2/course-material.jsp";
         request.getRequestDispatcher(view).forward(request, response);
-    }
-
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("usuario") == null) {
-            response.sendRedirect(request.getContextPath() + "/login");
-            return;
-        }
-
-        Usuario usuarioSesion = (Usuario) session.getAttribute("usuario");
-        Integer courseId = parseInteger(request.getParameter("id"));
-
-        CourseMaterialViewDto viewData = courseMaterialService.buildCourseMaterialView(usuarioSesion.getId(), courseId);
-        if (viewData.getOutcome() == CourseMaterialViewOutcome.INVALID_COURSE) {
-            response.sendRedirect(request.getContextPath() + "/explore?error=invalid_course");
-            return;
-        }
-
-        if (viewData.getOutcome() == CourseMaterialViewOutcome.COURSE_NOT_FOUND) {
-            response.sendRedirect(request.getContextPath() + "/explore?error=course_not_found");
-            return;
-        }
-
-        if (!viewData.isAccesoConcedido()) {
-            response.sendRedirect(request.getContextPath() + "/course-material?id=" + courseId + "&msg=comments-access-denied");
-            return;
-        }
-
-        String comment = request.getParameter("comentario");
-        if (comment != null) {
-            comment = comment.trim();
-        }
-
-        if (comment == null || comment.isEmpty()) {
-            response.sendRedirect(request.getContextPath() + "/course-material?id=" + courseId + "&msg=comment-empty");
-            return;
-        }
-
-        try {
-            reviewService.validateCommentLength(comment);
-        } catch (IllegalArgumentException ex) {
-            response.sendRedirect(request.getContextPath() + "/course-material?id=" + courseId + "&msg=comment-too-long");
-            return;
-        }
-
-        if (reviewService.containsOffensiveContent(comment)) {
-            response.sendRedirect(request.getContextPath() + "/course-material?id=" + courseId + "&msg=comment-offensive");
-            return;
-        }
-
-        var cursoOpt = cursoRepository.findById(courseId);
-        var usuarioOpt = usuarioRepository.findById(usuarioSesion.getId());
-        if (cursoOpt.isEmpty() || usuarioOpt.isEmpty()) {
-            response.sendRedirect(request.getContextPath() + "/course-material?id=" + courseId + "&msg=comment-save-error");
-            return;
-        }
-
-        Resena resena = new Resena();
-        resena.setComentario(comment);
-        resena.setFecha(LocalDate.now());
-        resena.setCurso(cursoOpt.get());
-        resena.setUsuario(usuarioOpt.get());
-
-        try {
-            reviewRepository.save(resena);
-            response.sendRedirect(request.getContextPath() + "/course-material?id=" + courseId + "&msg=comment-added");
-        } catch (Exception ex) {
-            response.sendRedirect(request.getContextPath() + "/course-material?id=" + courseId + "&msg=comment-save-error");
-        }
     }
 
     private void applyFlashMessage(HttpServletRequest request, String msg) {
@@ -174,7 +100,6 @@ public class CourseMaterialServlet extends HttpServlet {
         request.setAttribute("curso", viewData.getCurso());
         request.setAttribute("modulos", viewData.getModulos());
         request.setAttribute("accesoConcedido", viewData.isAccesoConcedido());
-        request.setAttribute("comentarios", reviewRepository.findByCursoId(courseId));
         request.setAttribute("progresoGuardado", courseProgressService.getSavedProgress(usuarioId, courseId));
     }
 

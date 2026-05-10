@@ -59,7 +59,7 @@ public final class ServiceFactory {
     private static final CourseMaterialServiceImpl courseMaterialService =
             new CourseMaterialServiceImpl(cursoRepo, matchRepo, moduloRepo);
     private static final ReviewService reviewService =
-            new ReviewServiceImpl(reviewRepo, new ReviewValidator());
+            new ReviewServiceImpl(reviewRepo, new ReviewValidator(),notificacionService);
     private static final PasswordRecoveryService recoveryService =
             new PasswordRecoveryServiceImpl(usuarioRepo);
     private static final PreviewCourseService previewCourseService = new PreviewCourseServiceImpl();

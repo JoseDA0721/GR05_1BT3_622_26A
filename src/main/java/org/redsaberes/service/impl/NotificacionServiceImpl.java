@@ -7,7 +7,6 @@ import org.redsaberes.service.exception.ServiceValidationException;
 import org.redsaberes.service.validator.NotificationValidator;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,7 +25,7 @@ public class NotificacionServiceImpl implements NotificacionService {
             Curso curso,
             TipoNotificacion tipo) throws ServiceValidationException {
         // Validaciones
-        NotificationValidator.validateNotificationCreation(usuarioReceptor, usuarioEmisor, curso, notificacionRepository);
+        NotificationValidator.validateNotificationCreation(usuarioReceptor, usuarioEmisor, curso, tipo, notificacionRepository);
 
         // Crear la notificación
         Notificacion notificacion = new Notificacion();
@@ -56,5 +55,11 @@ public class NotificacionServiceImpl implements NotificacionService {
     public Optional<Notificacion> getNotificacionById(Integer notificacionId) throws ServiceValidationException {
         return notificacionRepository.findById(notificacionId);
     }
+
+    @Override
+    public String getDescripcion(Notificacion notificacion) {
+        return notificacion.getDescripcion();
+    }
+
 
 }
