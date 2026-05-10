@@ -9,6 +9,7 @@ import org.redsaberes.repository.MatchCursoRepository;
 import org.redsaberes.service.UsuarioService;
 import org.redsaberes.service.dto.DatosPublicosUsuarioDto;
 import org.redsaberes.service.exception.ServiceValidationException;
+import org.redsaberes.service.exception.NameAlreadyTakenException;
 import org.redsaberes.service.validator.UsuarioValidator;
 
 import java.util.ArrayList;
@@ -59,6 +60,38 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
+    public Usuario registrarUsuarioConValidacion(String nombre, String email,
+                                                 String contrasena, String confirmarContrasena)
+            throws ServiceValidationException {
+
+        String nombreLimpio = normalizar(nombre);
+        String emailLimpio = normalizar(email);
+
+        // Validar que el nombre no esté duplicado
+        if (usuarioRepository.findByNombre(nombreLimpio).isPresent()) {
+            throw new NameAlreadyTakenException(
+                    "El nombre '" + nombreLimpio + "' ya existe en el sistema"
+            );
+        }
+
+        // Validar que las contraseñas coincidan
+        if (!contrasena.equals(confirmarContrasena)) {
+            throw new ServiceValidationException("Las contraseñas no coinciden");
+        }
+
+        // Crear nuevo usuario
+        Usuario usuario = new Usuario();
+        usuario.setNombre(nombreLimpio);
+        usuario.setCorreoElectronico(emailLimpio);
+        usuario.setContrasena(hashearContrasena(contrasena));
+
+        // Guardar en repositorio
+        usuarioRepository.save(usuario);
+
+        return usuario;
+    }
+
+    @Override
     public DatosPublicosUsuarioDto buscarDatosPublicos(Integer usuarioId) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new IllegalArgumentException("No existe el usuario con id: " + usuarioId));
@@ -90,6 +123,18 @@ public class UsuarioServiceImpl implements UsuarioService {
             if (curso != null && curso.getResenas() != null) {
                 resenas.addAll(curso.getResenas());
             }
+        }
+        // Delegar el cálculo del promedio a un método reutilizable
+        return calcularPromedio(resenas);
+    }
+
+    /**
+     * Calcula el promedio de estrellas a partir de una colección de reseñas.
+     * Método estático para permitir reuso desde otros componentes (p.ej. mappers)
+     */
+    public static double calcularPromedio(List<Resena> resenas) {
+        if (resenas == null || resenas.isEmpty()) {
+            return 0.0;
         }
 
         int suma = 0;

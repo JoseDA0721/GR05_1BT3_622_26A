@@ -17,6 +17,7 @@ public class UsuarioRepositoryImpl extends GenericRepositoryImpl<Usuario, Intege
 
     private static final String FIND_BY_CORREO_HQL = "FROM Usuario u WHERE u.correoElectronico = :correo";
     private static final String EXISTE_CORREO_HQL = "SELECT COUNT(u) FROM Usuario u WHERE u.correoElectronico = :correo";
+    private static final String FIND_BY_NOMBRE_HQL = "FROM Usuario u WHERE u.nombre = :nombre";
 
     private static final Logger logger =
             Logger.getLogger(UsuarioRepositoryImpl.class.getName());
@@ -32,6 +33,16 @@ public class UsuarioRepositoryImpl extends GenericRepositoryImpl<Usuario, Intege
             Query<Usuario> query = session.createQuery(FIND_BY_CORREO_HQL, Usuario.class
             );
             query.setParameter("correo", correo);
+            Usuario usuario = query.uniqueResult();
+            return Optional.ofNullable(usuario);
+        }
+    }
+
+    @Override
+    public Optional<Usuario> findByNombre(String nombre) {
+        try (Session session = getSessionFactory().openSession()) {
+            Query<Usuario> query = session.createQuery(FIND_BY_NOMBRE_HQL, Usuario.class);
+            query.setParameter("nombre", nombre);
             Usuario usuario = query.uniqueResult();
             return Optional.ofNullable(usuario);
         }

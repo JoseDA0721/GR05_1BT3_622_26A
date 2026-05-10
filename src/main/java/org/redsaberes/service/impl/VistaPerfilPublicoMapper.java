@@ -25,7 +25,7 @@ public class VistaPerfilPublicoMapper {
             }
         }
 
-        double promedio = calcularPromedio(resenas);
+        double promedio = UsuarioServiceImpl.calcularPromedio(resenas);
         List<String> primerasResenas = resenas.stream()
                 .filter(resena -> resena != null && resena.getComentario() != null)
                 .sorted(Comparator
@@ -44,21 +44,6 @@ public class VistaPerfilPublicoMapper {
         );
     }
 
-    private double calcularPromedio(List<Resena> resenas) {
-        if (resenas.isEmpty()) {
-            return 0.0;
-        }
-
-        int suma = 0;
-        int cantidad = 0;
-        for (Resena resena : resenas) {
-            if (resena != null && resena.getEstrellas() != null) {
-                suma += resena.getEstrellas();
-                cantidad++;
-            }
-        }
-
-        return cantidad == 0 ? 0.0 : (double) suma / cantidad;
-    }
+    // calcularPromedio fue movido a UsuarioServiceImpl para evitar duplicación y permitir reutilización
 }
 
