@@ -1,5 +1,6 @@
 package org.redsaberes.model;
 
 public enum TipoNotificacion {
-    LIKE_RECIBIDO
+    LIKE_RECIBIDO,
+    MATCH_RECIBIDO
 }

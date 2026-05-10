@@ -24,12 +24,12 @@ public class NotificacionRepositoryImpl extends GenericRepositoryImpl<Notificaci
     }
 
     @Override
-    public boolean existsByUsuarioEmisorAndCurso(Integer usuarioReceptorId, Integer cursoId) {
+    public boolean existsByUsuarioEmisorAndCurso(Integer usuarioEmisorId, Integer cursoId) {
         try(Session session = getSessionFactory().openSession()){
             Query<Long> query = session.createQuery(
-                    "SELECT COUNT(n) FROM Notificacion n WHERE n.usuarioReceptor.id = :usuarioReceptorId AND n.curso.id = :cursoId",
+                    "SELECT COUNT(n) FROM Notificacion n WHERE n.usuarioEmisor.id = :usuarioEmisorId AND n.curso.id = :cursoId",
                     Long.class);
-            query.setParameter("usuarioReceptorId", usuarioReceptorId);
+            query.setParameter("usuarioEmisorId", usuarioEmisorId);
             query.setParameter("cursoId", cursoId);
             Long count = query.uniqueResult();
             return count > 0;

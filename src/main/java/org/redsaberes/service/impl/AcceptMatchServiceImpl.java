@@ -2,6 +2,7 @@ package org.redsaberes.service.impl;
 
 import org.redsaberes.model.Curso;
 import org.redsaberes.model.MatchCurso;
+import org.redsaberes.model.TipoNotificacion;
 import org.redsaberes.model.Usuario;
 import org.redsaberes.repository.CursoRepository;
 import org.redsaberes.repository.LikeCursoRepository;
@@ -10,7 +11,9 @@ import org.redsaberes.repository.impl.CursoRepositoryImpl;
 import org.redsaberes.repository.impl.LikeCursoRepositoryImpl;
 import org.redsaberes.repository.impl.MatchCursoRepositoryImpl;
 import org.redsaberes.service.AcceptMatchService;
+import org.redsaberes.service.NotificacionService;
 import org.redsaberes.service.dto.AcceptMatchOutcome;
+import org.redsaberes.service.exception.ServiceValidationException;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -20,17 +23,30 @@ public class AcceptMatchServiceImpl implements AcceptMatchService {
     private final CursoRepository cursoRepository;
     private final LikeCursoRepository likeCursoRepository;
     private final MatchCursoRepository matchCursoRepository;
+    private final NotificacionService notificacionService;
 
     public AcceptMatchServiceImpl() {
-        this(new CursoRepositoryImpl(), new LikeCursoRepositoryImpl(), new MatchCursoRepositoryImpl());
+        this(new CursoRepositoryImpl(),
+             new LikeCursoRepositoryImpl(),
+             new MatchCursoRepositoryImpl(),
+             new NotificacionServiceImpl(new org.redsaberes.repository.impl.NotificacionRepositoryImpl()));
     }
 
     public AcceptMatchServiceImpl(CursoRepository cursoRepository,
                                   LikeCursoRepository likeCursoRepository,
-                                  MatchCursoRepository matchCursoRepository) {
+                                  MatchCursoRepository matchCursoRepository,
+                                  NotificacionService notificacionService) {
         this.cursoRepository = cursoRepository;
         this.likeCursoRepository = likeCursoRepository;
         this.matchCursoRepository = matchCursoRepository;
+        this.notificacionService = notificacionService;
+    }
+
+    // Backwards-compatible constructor (sin notificaciones)
+    public AcceptMatchServiceImpl(CursoRepository cursoRepository,
+                                  LikeCursoRepository likeCursoRepository,
+                                  MatchCursoRepository matchCursoRepository) {
+        this(cursoRepository, likeCursoRepository, matchCursoRepository, null);
     }
 
     @Override
@@ -63,9 +79,23 @@ public class AcceptMatchServiceImpl implements AcceptMatchService {
             match.setEstudiante(estudiante);
             match.setFechaConfirmacion(LocalDateTime.now().toString());
             matchCursoRepository.save(match);
+
+            // 🔔 NOTIFICAR EL MATCH RECIBIDO
+            if (notificacionService != null) {
+                try {
+                    notificacionService.createNotification(
+                        estudiante,                      // ← RECEPTOR (quien dió like)
+                        creador,                         // ← EMISOR (creador que acepta)
+                        cursoOpt.get(),                  // ← CONTEXTO
+                        TipoNotificacion.MATCH_RECIBIDO
+                    );
+                } catch (ServiceValidationException e) {
+                    System.err.println("Error al crear notificación de match: " + e.getMessage());
+                    // El match se guardó, pero la notificación falló
+                }
+            }
         }
 
         return AcceptMatchOutcome.MATCHED;
     }
 }
-

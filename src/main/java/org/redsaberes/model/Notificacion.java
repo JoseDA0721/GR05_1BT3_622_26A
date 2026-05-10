@@ -150,8 +150,16 @@ public class Notificacion {
      * Ej: "Juan García te dio like en tu curso 'React Avanzado'"
      */
     public String getDescripcion() {
-        return String.format("%s te dio like en tu curso '%s'",
-                usuarioEmisor.getNombre(),
-                curso.getTitulo());
+        return switch(this.tipo) {
+            case LIKE_RECIBIDO ->
+                    String.format("%s te dio like en tu curso '%s'",
+                            usuarioEmisor.getNombre(),
+                            curso.getTitulo());
+
+            case MATCH_RECIBIDO ->
+                    String.format("%s te aceptó en su curso '%s'",
+                            usuarioEmisor.getNombre(),
+                            curso.getTitulo());
+        };
     }
 }

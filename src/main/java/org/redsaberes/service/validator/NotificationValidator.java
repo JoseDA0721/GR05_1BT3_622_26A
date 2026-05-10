@@ -27,10 +27,6 @@ public final class NotificationValidator {
             throw new ServiceValidationException("Curso sin propietario");
         }
 
-        if(curso.getUsuario().equals(usuarioEmisor)){
-            throw new ServiceValidationException("El usuario emisor no puede ser el dueño del curso");
-        }
-
         if(notificacionRepository.existsByUsuarioEmisorAndCurso(usuarioEmisor.getId(), curso.getId())){
             throw new ServiceValidationException("No se puede duplicar notificaciones");
         }

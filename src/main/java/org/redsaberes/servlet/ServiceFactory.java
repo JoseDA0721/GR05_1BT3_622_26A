@@ -49,8 +49,8 @@ public final class ServiceFactory {
             new LikeCourseServiceImpl(cursoRepo, likeRepo, notificacionService);
     private static final MatchesService matchesService =
             new MatchesServiceImpl(cursoRepo, likeRepo, matchRepo);
-    private static final AcceptMatchService acceptMatchService =
-            new AcceptMatchServiceImpl(cursoRepo, likeRepo, matchRepo);
+   private static final AcceptMatchService acceptMatchService =
+        new AcceptMatchServiceImpl(cursoRepo, likeRepo, matchRepo, notificacionService);
     private static final ModuloManagementService moduloService =
             new ModuloManagementServiceImpl(cursoRepo, moduloRepo, leccionRepo);
     private static final CourseLifecycleService lifecycleService =

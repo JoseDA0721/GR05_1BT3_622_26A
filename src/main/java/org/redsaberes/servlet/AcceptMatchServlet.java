@@ -16,6 +16,7 @@ public class AcceptMatchServlet extends HttpServlet {
 
     private final AcceptMatchService acceptMatchService = ServiceFactory.getAcceptMatch();
 
+
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
         HttpSession session = request.getSession(false);
