@@ -96,8 +96,12 @@ public class NotificacionServlet extends HttpServlet {
 
             notificacionService.markAsRead(notificacion);
 
-            // Redirigir al flujo que quieres mostrar
-            response.sendRedirect(request.getContextPath() + "/matches");
+            String referer = request.getHeader("Referer");
+            if (referer != null && !referer.isBlank()) {
+                response.sendRedirect(referer);
+            } else {
+                response.sendRedirect(request.getContextPath() + "/notificaciones");
+            }
 
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error al marcar notificacion como leida", e);
