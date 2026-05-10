@@ -8,8 +8,6 @@ import org.redsaberes.service.ChangePasswordService;
 import org.redsaberes.service.exception.ServiceValidationException;
 import org.redsaberes.service.validator.PasswordValidator;
 
-import java.util.Optional;
-
 public class ChangePasswordServiceImpl implements ChangePasswordService {
 
     private final UsuarioRepository usuarioRepository;
@@ -24,39 +22,80 @@ public class ChangePasswordServiceImpl implements ChangePasswordService {
 
     @Override
     public boolean cambiarContrasena(Integer usuarioId,
-                                    String contrasenaActual,
-                                    String nuevaContrasena,
-                                    String confirmarContrasena) throws ServiceValidationException {
+                                     String contrasenaActual,
+                                     String nuevaContrasena,
+                                     String confirmarContrasena)
+            throws ServiceValidationException {
+
+        validarCampos(usuarioId, contrasenaActual, nuevaContrasena, confirmarContrasena);
+        validarConfirmacion(nuevaContrasena, confirmarContrasena);
+        validarSeguridad(nuevaContrasena);
+
+        Usuario usuario = buscarUsuario(usuarioId);
+        validarContrasenaActual(contrasenaActual, usuario);
+
+        actualizarContrasena(usuario, nuevaContrasena);
+        return true;
+    }
+
+    private void validarCampos(Integer usuarioId,
+                               String contrasenaActual,
+                               String nuevaContrasena,
+                               String confirmarContrasena)
+            throws ServiceValidationException {
 
         if (usuarioId == null) {
             throw new ServiceValidationException("Usuario inválido");
         }
-        if (contrasenaActual == null || contrasenaActual.isBlank()
-                || nuevaContrasena == null || nuevaContrasena.isBlank()
-                || confirmarContrasena == null || confirmarContrasena.isBlank()) {
+
+        if (isBlank(contrasenaActual) || isBlank(nuevaContrasena) || isBlank(confirmarContrasena)) {
             throw new ServiceValidationException("Todos los campos son obligatorios");
         }
+    }
+
+    private void validarConfirmacion(String nuevaContrasena,
+                                     String confirmarContrasena)
+            throws ServiceValidationException {
+
         if (!nuevaContrasena.equals(confirmarContrasena)) {
             throw new ServiceValidationException("Las contraseñas no coinciden");
         }
+    }
+
+    private void validarSeguridad(String nuevaContrasena)
+            throws ServiceValidationException {
+
         if (!PasswordValidator.esSegura(nuevaContrasena)) {
             throw new ServiceValidationException(
-                    "La contraseña debe tener al menos 8 caracteres, una mayúscula y un número");
+                    "La contraseña debe tener al menos 8 caracteres, una mayúscula y un número"
+            );
         }
+    }
 
-        Optional<Usuario> usuarioOpt = usuarioRepository.findById(usuarioId);
-        if (usuarioOpt.isEmpty()) {
-            throw new ServiceValidationException("Usuario no encontrado");
-        }
+    private Usuario buscarUsuario(Integer usuarioId)
+            throws ServiceValidationException {
 
-        Usuario usuario = usuarioOpt.get();
+        return usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new ServiceValidationException("Usuario no encontrado"));
+    }
+
+    private void validarContrasenaActual(String contrasenaActual,
+                                         Usuario usuario)
+            throws ServiceValidationException {
+
         if (usuario.getContrasena() == null || !BCrypt.checkpw(contrasenaActual, usuario.getContrasena())) {
             throw new ServiceValidationException("La contraseña actual no es correcta");
         }
+    }
+
+    private void actualizarContrasena(Usuario usuario,
+                                      String nuevaContrasena) {
 
         usuario.setContrasena(BCrypt.hashpw(nuevaContrasena, BCrypt.gensalt(12)));
         usuarioRepository.update(usuario);
-        return true;
+    }
+
+    private boolean isBlank(String valor) {
+        return valor == null || valor.isBlank();
     }
 }
-
