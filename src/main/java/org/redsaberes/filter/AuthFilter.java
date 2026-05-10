@@ -19,6 +19,7 @@ import java.io.IOException;
         "/edit-course",
         "/publicar",
         "/archive-course",
+        "/profile/edit",
         "/my-courses",
         "/curso/*",
         "/modulo/*",

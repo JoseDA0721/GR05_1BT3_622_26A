@@ -92,6 +92,49 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
+    public Usuario actualizarPerfilBasico(Integer usuarioId,
+                                          String nombre,
+                                          String correo) throws ServiceValidationException {
+        if (usuarioId == null) {
+            throw new ServiceValidationException("Usuario inválido");
+        }
+
+        String nombreLimpio = normalizar(nombre);
+        String correoLimpio = normalizar(correo);
+
+        if (nombreLimpio == null || nombreLimpio.isBlank()) {
+            throw new ServiceValidationException("El nombre es obligatorio");
+        }
+        if (nombreLimpio.length() > 100) {
+            throw new ServiceValidationException("El nombre no puede exceder 100 caracteres");
+        }
+        if (correoLimpio == null || correoLimpio.isBlank()) {
+            throw new ServiceValidationException("El correo es obligatorio");
+        }
+        if (!correoLimpio.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
+            throw new ServiceValidationException("El formato del correo electrónico no es válido");
+        }
+
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new ServiceValidationException("No se encontró el usuario"));
+
+        Optional<Usuario> usuarioConMismoNombre = usuarioRepository.findByNombre(nombreLimpio);
+        if (usuarioConMismoNombre.isPresent() && !usuarioConMismoNombre.get().getId().equals(usuarioId)) {
+            throw new NameAlreadyTakenException("El nombre '" + nombreLimpio + "' ya existe en el sistema");
+        }
+
+        Optional<Usuario> usuarioConMismoCorreo = usuarioRepository.findByCorreo(correoLimpio);
+        if (usuarioConMismoCorreo.isPresent() && !usuarioConMismoCorreo.get().getId().equals(usuarioId)) {
+            throw new ServiceValidationException("El correo ya está registrado");
+        }
+
+        usuario.setNombre(nombreLimpio);
+        usuario.setCorreoElectronico(correoLimpio);
+        usuarioRepository.update(usuario);
+        return usuario;
+    }
+
+    @Override
     public DatosPublicosUsuarioDto buscarDatosPublicos(Integer usuarioId) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new IllegalArgumentException("No existe el usuario con id: " + usuarioId));

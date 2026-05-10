@@ -131,15 +131,17 @@
                         </c:choose>
                     </div>
                 </div>
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-gradient-brand rounded-full flex items-center justify-center text-white font-semibold">
+                <a href="${pageContext.request.contextPath}/profile/edit"
+                   class="flex items-center gap-3 group"
+                   title="Editar perfil">
+                    <div class="w-10 h-10 bg-gradient-brand rounded-full flex items-center justify-center text-white font-semibold group-hover:shadow-md transition-shadow">
                         ${sessionScope.usuario.nombre.substring(0, 1).toUpperCase()}
                     </div>
                     <div class="hidden md:block">
-                        <div class="text-sm font-semibold text-gray-900">${sessionScope.usuario.nombre}</div>
+                        <div class="text-sm font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">${sessionScope.usuario.nombre}</div>
                         <div class="text-xs text-gray-500">${sessionScope.usuario.correoElectronico}</div>
                     </div>
-                </div>
+                </a>
                 <a href="${pageContext.request.contextPath}/logout"
                    class="p-2 text-gray-600 hover:text-red-600 transition-colors"
                    title="Cerrar sesión">
