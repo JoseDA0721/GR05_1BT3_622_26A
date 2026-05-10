@@ -30,7 +30,10 @@ public final class NotificationValidator {
         if(curso.getUsuario()==null){
             throw new ServiceValidationException("Curso sin propietario");
         }
-        if(curso.getUsuario().equals(usuarioEmisor)){
+        // Para la mayoría de notificaciones (LIKE, REVIEW) el emisor no debe ser el dueño del curso.
+        // Sin embargo, para MATCH_RECIBIDO el emisor es precisamente el creador/propietario que acepta
+        // al estudiante, por lo que permitimos que el emisor sea el dueño cuando el tipo es MATCH_RECIBIDO.
+        if (tipoNotificacion != TipoNotificacion.MATCH_RECIBIDO && curso.getUsuario().equals(usuarioEmisor)) {
             throw new ServiceValidationException("El usuario emisor no puede ser el dueño del curso");
         }
 
