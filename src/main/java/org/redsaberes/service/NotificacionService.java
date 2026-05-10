@@ -24,4 +24,6 @@ public interface NotificacionService {
     Optional<Notificacion> getNotificacionById(Integer notificacionId) throws ServiceValidationException;
 
     String getDescripcion(Notificacion notificacion) throws ServiceValidationException;
+
+    List<Notificacion> getAllNotifications(Integer usuarioReceptorId);
 }

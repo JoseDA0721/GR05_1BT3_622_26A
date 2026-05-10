@@ -61,5 +61,10 @@ public class NotificacionServiceImpl implements NotificacionService {
         return notificacion.getDescripcion();
     }
 
+    @Override
+    public List<Notificacion> getAllNotifications(Integer usuarioReceptorId) {
+        return notificacionRepository.findByUsuarioReceptorId(usuarioReceptorId);
+    }
+
 
 }

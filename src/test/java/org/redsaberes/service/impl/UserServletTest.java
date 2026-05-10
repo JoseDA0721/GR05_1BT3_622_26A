@@ -4,18 +4,15 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Mockito;
-import org.redsaberes.service.UserController;
+import org.redsaberes.servlet.UserServlet;
 import org.redsaberes.service.UsuarioService;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
-class UserControllerTest {
+class UserServletTest {
 
     static Stream<UsuarioDtoValido> usuariosValidos() {
         return Stream.of(
@@ -28,10 +25,8 @@ class UserControllerTest {
     @ParameterizedTest(name = "Debe responder 200 para DTO válido #{index}: {0}")
     @MethodSource("usuariosValidos")
     void post_users_debe_validar_y_responder_ok(UsuarioDtoValido dto) throws Exception {
-        UserController controller = new UserController();
-
         UsuarioService usuarioServiceMock = mock(UsuarioService.class);
-        injectService(controller, usuarioServiceMock);
+        UserServlet userServlet = new UserServlet(usuarioServiceMock);
 
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpServletResponse response = mock(HttpServletResponse.class);
@@ -42,7 +37,7 @@ class UserControllerTest {
         when(request.getParameter("confirmPassword")).thenReturn(dto.confirmPassword());
         when(request.getParameter("terms")).thenReturn(dto.terms());
 
-        invokeDoPost(controller, request, response);
+        invokeDoPost(userServlet, request, response);
 
         verify(usuarioServiceMock, times(1)).registrarUsuarioConValidacion(
                 dto.nombre(),
@@ -55,16 +50,11 @@ class UserControllerTest {
         verifyNoMoreInteractions(usuarioServiceMock);
     }
 
-    private void injectService(UserController controller, UsuarioService service) throws Exception {
-        Field field = UserController.class.getDeclaredField("usuarioService");
-        field.setAccessible(true);
-        field.set(controller, service);
-    }
 
-    private void invokeDoPost(UserController controller,
+    private void invokeDoPost(UserServlet controller,
                               HttpServletRequest request,
                               HttpServletResponse response) throws Exception {
-        Method method = UserController.class.getDeclaredMethod(
+        Method method = UserServlet.class.getDeclaredMethod(
                 "doPost",
                 HttpServletRequest.class,
                 HttpServletResponse.class

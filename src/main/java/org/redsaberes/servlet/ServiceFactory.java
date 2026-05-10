@@ -55,7 +55,7 @@ public final class ServiceFactory {
     private static final CourseLifecycleService lifecycleService =
             new CourseLifecycleServiceImpl(cursoRepo, moduloRepo);
     private static final CourseOverviewService overviewService =
-            new CourseOverviewServiceImpl(cursoRepo, matchRepo, moduloRepo, reviewRepo);
+            new CourseOverviewServiceImpl(cursoRepo, matchRepo, moduloRepo, reviewRepo);;
     private static final CourseMaterialServiceImpl courseMaterialService =
             new CourseMaterialServiceImpl(cursoRepo, matchRepo, moduloRepo);
     private static final ReviewService reviewService =
@@ -64,7 +64,7 @@ public final class ServiceFactory {
             new PasswordRecoveryServiceImpl(usuarioRepo);
     private static final PreviewCourseService previewCourseService = new PreviewCourseServiceImpl();
     private static final ChangePasswordService changePasswordService =
-            new ChangePasswordServiceImpl(usuarioRepo);
+           new ChangePasswordServiceImpl(usuarioRepo);
 
     public static AuthService getAuthService()               { return authService; }
     public static UsuarioService getUsuarioService()          { return usuarioService; }
@@ -84,8 +84,7 @@ public final class ServiceFactory {
     public static LogoutService getLogout() { return logoutService; }
     public static PreviewCourseService getPreviewCourse() { return previewCourseService; }
     public static NotificacionService getNotificacionService() { return notificacionService; }
-    public static ChangePasswordService getChangePassword() { return changePasswordService;
-    }
+    public static ChangePasswordService getChangePassword() { return changePasswordService;}
     private ServiceFactory() { throw new AssertionError(); }
 }
 

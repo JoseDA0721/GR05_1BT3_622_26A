@@ -2,6 +2,7 @@ package org.redsaberes.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 @Entity
 @Table(name = "notificacion")
@@ -165,5 +166,17 @@ public class Notificacion {
                             usuarioEmisor.getNombre(),
                             curso.getTitulo());
         };
+    }
+
+    /**
+     * Obtiene la fecha de creación formateada para mostrar en UI.
+     * Formato: dd/MM/yyyy
+     */
+    public String getFechaCreacionFormateada() {
+        if (this.fechaCreacion == null) {
+            return "";
+        }
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        return this.fechaCreacion.format(formatter);
     }
 }

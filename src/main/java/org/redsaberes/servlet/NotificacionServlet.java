@@ -38,11 +38,12 @@ public class NotificacionServlet extends HttpServlet {
 
             Usuario usuario = (Usuario) session.getAttribute("usuario");
 
-            // Obtener todas las notificaciones no leídas del usuario
-            var notificacionesNoLeidas = notificacionService.getUnread(usuario.getId());
+            // Obtener todas las notificaciones del usuario (historial completo)
+            var todasNotificaciones = notificacionService.getAllNotifications(usuario.getId());
 
-            request.setAttribute("notificacionesNoLeidas", notificacionesNoLeidas);
-            request.setAttribute("totalNotificaciones", notificacionesNoLeidas.size());
+            request.setAttribute("todasNotificaciones", todasNotificaciones);
+            request.setAttribute("totalNotificaciones", todasNotificaciones.size());
+            request.getRequestDispatcher("/WEB-INF/views/inc2/notificaciones.jsp").forward(request, response);
 
         }
         catch (Exception e) {

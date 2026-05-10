@@ -28,6 +28,8 @@ import java.io.IOException;
         "/like/*",
         "/match/*",
         "/inscripcion/*",
+        "/notificaciones",
+        "/api/notificaciones/*",
         "/change-password"
 })
 public class AuthFilter implements Filter {

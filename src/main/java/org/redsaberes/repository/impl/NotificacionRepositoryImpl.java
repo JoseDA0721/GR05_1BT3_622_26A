@@ -18,7 +18,9 @@ public class NotificacionRepositoryImpl extends GenericRepositoryImpl<Notificaci
     public List<Notificacion> findByUsuarioReceptorId(Integer usuarioId) {
         try(Session session = getSessionFactory().openSession()){
             Query<Notificacion> query = session.createQuery(
-                    "FROM Notificacion n WHERE n.usuarioReceptor.id = :usuarioId", Notificacion.class);
+                    "FROM Notificacion n " +
+                            "WHERE n.usuarioReceptor.id = :usuarioId " +
+                            "ORDER BY n.fechaCreacion DESC", Notificacion.class);
             query.setParameter("usuarioId", usuarioId);
             return query.getResultList();
         }
@@ -59,7 +61,10 @@ public class NotificacionRepositoryImpl extends GenericRepositoryImpl<Notificaci
     public List<Notificacion> findUnreadByUsuarioReceptorId(Integer usuarioId) {
         try(Session session = getSessionFactory().openSession()){
             Query<Notificacion> query = session.createQuery(
-                    "FROM Notificacion n WHERE n.usuarioReceptor.id = :usuarioId AND n.estado = :estado",
+                    "FROM Notificacion n " +
+                            "WHERE n.usuarioReceptor.id = :usuarioId " +
+                            "AND n.estado = :estado " +
+                            "ORDER BY n.fechaCreacion DESC",
                     Notificacion.class);
             query.setParameter("usuarioId", usuarioId);
             query.setParameter("estado", EstadoNotificacion.NO_LEIDO);

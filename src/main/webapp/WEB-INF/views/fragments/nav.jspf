@@ -110,7 +110,7 @@
                                     <c:forEach var="n" items="${notificacionesNoLeidas}">
                                         <li class="px-4 py-3 hover:bg-gray-50">
                                             <div class="text-sm text-gray-800">${n.descripcion}</div>
-                                            <div class="mt-1 text-xs text-gray-500">${n.fechaCreacion}</div>
+                                            <div class="mt-1 text-xs text-gray-500">${n.fechaCreacionFormateada}</div>
 
                                             <form method="post" action="${pageContext.request.contextPath}/notificaciones" class="mt-2">
                                                 <input type="hidden" name="notificacionId" value="${n.id}" />
@@ -122,10 +122,24 @@
                                         </li>
                                     </c:forEach>
                                 </ul>
+                                <!-- Link a historial completo -->
+                                <div class="px-4 py-3 border-t border-gray-100 bg-gray-50">
+                                    <a href="${pageContext.request.contextPath}/notificaciones"
+                                       class="text-sm font-medium text-indigo-600 hover:text-indigo-800 transition">
+                                        Ver todas las notificaciones →
+                                    </a>
+                                </div>
                             </c:when>
                             <c:otherwise>
                                 <div class="px-4 py-6 text-sm text-gray-500 text-center">
                                     No tienes notificaciones no leídas.
+                                </div>
+                                <!-- Link a historial completo (disponible siempre) -->
+                                <div class="px-4 py-3 border-t border-gray-100 bg-gray-50">
+                                    <a href="${pageContext.request.contextPath}/notificaciones"
+                                       class="text-sm font-medium text-indigo-600 hover:text-indigo-800 transition">
+                                        Ver todas las notificaciones →
+                                    </a>
                                 </div>
                             </c:otherwise>
                         </c:choose>

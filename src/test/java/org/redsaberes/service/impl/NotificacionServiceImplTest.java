@@ -309,4 +309,88 @@ class NotificacionServiceImplTest {
         assertEquals("Emisor te dejó una reseña en tu curso 'Curso de Test'", result);
     }
 
+    // Test de centro de notificaciones
+
+    private static Stream<Arguments> provideNotification() {
+        Usuario receptor = new Usuario();
+        receptor.setId(2);
+
+        Usuario emisor = new Usuario();
+        emisor.setId(1);
+
+        Curso curso = new Curso();
+        curso.setId(1);
+
+        Notificacion leida = new Notificacion();
+        leida.setUsuarioReceptor(receptor);
+        leida.setUsuarioEmisor(emisor);
+        leida.setCurso(curso);
+        leida.setTipo(TipoNotificacion.LIKE_RECIBIDO);
+        leida.setEstado(EstadoNotificacion.LEIDO);
+        leida.setFechaCreacion(LocalDate.now());
+
+        Notificacion noLeida1 = new Notificacion();
+        noLeida1.setUsuarioReceptor(receptor);
+        noLeida1.setUsuarioEmisor(emisor);
+        noLeida1.setCurso(curso);
+        noLeida1.setTipo(TipoNotificacion.LIKE_RECIBIDO);
+        noLeida1.setEstado(EstadoNotificacion.NO_LEIDO);
+        noLeida1.setFechaCreacion(LocalDate.now());
+
+        Notificacion noLeida2 = new Notificacion();
+        noLeida2.setUsuarioReceptor(receptor);
+        noLeida2.setUsuarioEmisor(emisor);
+        noLeida2.setCurso(curso);
+        noLeida2.setTipo(TipoNotificacion.LIKE_RECIBIDO);
+        noLeida2.setEstado(EstadoNotificacion.NO_LEIDO);
+        noLeida2.setFechaCreacion(LocalDate.now());
+
+        // Notificaciones de tipo REVIEW_RECIBIDA
+        Notificacion reviewLeida = new Notificacion();
+        reviewLeida.setUsuarioReceptor(receptor);
+        reviewLeida.setUsuarioEmisor(emisor);
+        reviewLeida.setCurso(curso);
+        reviewLeida.setTipo(TipoNotificacion.REVIEW_RECIBIDA);
+        reviewLeida.setEstado(EstadoNotificacion.LEIDO);
+        reviewLeida.setFechaCreacion(LocalDate.now());
+
+        Notificacion reviewNoLeida = new Notificacion();
+        reviewNoLeida.setUsuarioReceptor(receptor);
+        reviewNoLeida.setUsuarioEmisor(emisor);
+        reviewNoLeida.setCurso(curso);
+        reviewNoLeida.setTipo(TipoNotificacion.REVIEW_RECIBIDA);
+        reviewNoLeida.setEstado(EstadoNotificacion.NO_LEIDO);
+        reviewNoLeida.setFechaCreacion(LocalDate.now());
+
+        return Stream.of(
+                // Caso: una notificación LIKE leída
+                Arguments.of(List.of(leida), 1),
+                // Caso: dos notificaciones LIKE, una leída y una sin leer
+                Arguments.of(List.of(leida, noLeida1), 2),
+                // Caso: múltiples notificaciones de tipos distintos y estados distintos
+                Arguments.of(List.of(leida, noLeida1, noLeida2, reviewLeida, reviewNoLeida), 5),
+                // Caso: solo notificaciones sin leer de diferentes tipos
+                Arguments.of(List.of(noLeida1, reviewNoLeida), 2),
+                // Caso: vacío
+                Arguments.of(List.of(), 0)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideNotification")
+    void give_notification_when_get_all_then_return_list(
+            List<Notificacion> allNotifications,
+            int expectedNumberOfNotifications
+    ) {
+        // Stubear el repositorio para devolver TODAS las notificaciones sin importar estado o tipo
+        when(notificacionRepository.findByUsuarioReceptorId(usuarioReceptor.getId()))
+                .thenReturn(allNotifications);
+
+        // Invocar el servicio
+        allNotifications = notificacionService.getAllNotifications(usuarioReceptor.getId());
+
+        // Verificar que devuelve exactamente las mismas (todas, sin filtrar)
+        assertEquals(expectedNumberOfNotifications, allNotifications.size());
+        verify(notificacionRepository, times(1)).findByUsuarioReceptorId(usuarioReceptor.getId());
+    }
 }

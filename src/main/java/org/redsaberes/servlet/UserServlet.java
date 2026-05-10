@@ -1,26 +1,30 @@
-package org.redsaberes.service;
+package org.redsaberes.servlet;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.redsaberes.service.UsuarioService;
 import org.redsaberes.service.exception.ServiceValidationException;
-import org.redsaberes.servlet.ServiceFactory;
 
 import java.io.IOException;
 import java.io.Serial;
 
 @WebServlet("/users")
-public class UserController extends HttpServlet {
+public class UserServlet extends HttpServlet {
 
     @Serial
     private static final long serialVersionUID = 1L;
 
     private final UsuarioService usuarioService;
 
-    public UserController() {
-        this.usuarioService = ServiceFactory.getUsuarioService();
+    public UserServlet() {
+        this(ServiceFactory.getUsuarioService());
+    }
+
+    public UserServlet(UsuarioService usuarioService) {
+        this.usuarioService = usuarioService;
     }
 
     @Override
@@ -34,7 +38,6 @@ public class UserController extends HttpServlet {
         String correo = request.getParameter("email");
         String contrasena = request.getParameter("password");
         String confirmarContrasena = request.getParameter("confirmPassword");
-        String terms = request.getParameter("terms");
 
         try {
             usuarioService.registrarUsuarioConValidacion(
