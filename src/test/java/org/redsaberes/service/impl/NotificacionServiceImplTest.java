@@ -382,7 +382,6 @@ class NotificacionServiceImplTest {
             List<Notificacion> allNotifications,
             int expectedNumberOfNotifications
     ) {
-        // Stubear el repositorio para devolver TODAS las notificaciones sin importar estado o tipo
         when(notificacionRepository.findByUsuarioReceptorId(usuarioReceptor.getId()))
                 .thenReturn(allNotifications);
 

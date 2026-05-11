@@ -46,11 +46,19 @@ public class DataInitializer {
         diego.setContrasena(hash);
         usuarioRepo.save(diego);
 
+        // Usuario adicional sin notificaciones (para validar escenario de usuario sin notificaciones)
+        Usuario lucia = new Usuario();
+        lucia.setNombre("Lucía Pérez");
+        lucia.setCorreoElectronico("lucia@test.com");
+        lucia.setContrasena(hash);
+        usuarioRepo.save(lucia);
+
         // Recargar con IDs generados
         ana    = usuarioRepo.findByCorreo("ana@test.com").get();
         carlos = usuarioRepo.findByCorreo("carlos@test.com").get();
         maria  = usuarioRepo.findByCorreo("maria@test.com").get();
         diego  = usuarioRepo.findByCorreo("diego@test.com").get();
+        lucia  = usuarioRepo.findByCorreo("lucia@test.com").get();
 
         // ── Cursos (6 cursos para más contenido) ──
         CursoRepositoryImpl cursoRepo = new CursoRepositoryImpl();
@@ -247,18 +255,47 @@ public class DataInitializer {
         resena4.setCurso(cursoJavaScript);
         reviewRepo.save(resena4);
 
-        // ── Notificaciones de reseñas ──
-        // Se crean para validar el nuevo flujo REVIEW_RECIBIDA en UI y API.
+        // ── Notificaciones de reseñas (creadas a través del servicio para respetar validaciones) ──
         NotificacionRepositoryImpl notificacionRepo = new NotificacionRepositoryImpl();
+        org.redsaberes.service.impl.NotificacionServiceImpl notificacionService =
+                new org.redsaberes.service.impl.NotificacionServiceImpl(notificacionRepo);
 
-        notificacionRepo.save(new Notificacion(ana, carlos, cursoPython,
-                TipoNotificacion.REVIEW_RECIBIDA, LocalDate.now()));
-        notificacionRepo.save(new Notificacion(carlos, ana, cursoDiseno,
-                TipoNotificacion.REVIEW_RECIBIDA, LocalDate.now()));
-        notificacionRepo.save(new Notificacion(maria, diego, cursoMarketing,
-                TipoNotificacion.REVIEW_RECIBIDA, LocalDate.now()));
-        notificacionRepo.save(new Notificacion(diego, maria, cursoJavaScript,
-                TipoNotificacion.REVIEW_RECIBIDA, LocalDate.now()));
+        // Escenario 1: Carlos (estudiante con match confirmado en Python) publica reseña -> notificar a Ana
+        try {
+            notificacionService.createNotification(cursoPython.getUsuario(), carlos, cursoPython, TipoNotificacion.REVIEW_RECIBIDA);
+        } catch (Exception e) {
+            System.err.println("Error creando notificación de reseña para Python: " + e.getMessage());
+        }
+
+        // Otros casos de reseñas: crear notificaciones correspondientes
+        try {
+            notificacionService.createNotification(cursoDiseno.getUsuario(), ana, cursoDiseno, TipoNotificacion.REVIEW_RECIBIDA);
+        } catch (Exception e) {
+            System.err.println("Error creando notificación de reseña para Diseño: " + e.getMessage());
+        }
+
+        try {
+            notificacionService.createNotification(cursoMarketing.getUsuario(), diego, cursoMarketing, TipoNotificacion.REVIEW_RECIBIDA);
+        } catch (Exception e) {
+            System.err.println("Error creando notificación de reseña para Marketing: " + e.getMessage());
+        }
+
+        try {
+            notificacionService.createNotification(cursoJavaScript.getUsuario(), maria, cursoJavaScript, TipoNotificacion.REVIEW_RECIBIDA);
+        } catch (Exception e) {
+            System.err.println("Error creando notificación de reseña para JavaScript: " + e.getMessage());
+        }
+
+        // Escenario 3: Intento de publicar una segunda reseña por el mismo usuario en el mismo curso
+        // La validación de notificaciones debe evitar crear una segunda notificación por emisor/curso/tipo
+        try {
+            notificacionService.createNotification(cursoPython.getUsuario(), carlos, cursoPython, TipoNotificacion.REVIEW_RECIBIDA);
+            System.err.println("Advertencia: se creó una segunda notificación de reseña (duplicado)");
+        } catch (org.redsaberes.service.exception.ServiceValidationException expected) {
+            System.out.println("Validación impidió notificación duplicada de reseña para Carlos en Python (OK)");
+        } catch (Exception e) {
+            System.err.println("Error inesperado al crear notificación duplicada: " + e.getMessage());
+        }
 
         // ── Inscripciones con progreso variado ──
         InscripcionRepositoryImpl inscripcionRepo = new InscripcionRepositoryImpl();
