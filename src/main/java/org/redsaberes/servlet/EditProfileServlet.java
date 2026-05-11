@@ -43,7 +43,7 @@ public class EditProfileServlet extends HttpServlet {
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
 
-        Usuario usuarioSesion = resolveSessionUserOrRedirect(request, response);
+        Usuario usuarioSesion = org.redsaberes.servlet.AuthHelper.getSessionUserOrRedirect(request, response);
         if (usuarioSesion == null) {
             return;
         }
@@ -55,15 +55,7 @@ public class EditProfileServlet extends HttpServlet {
         processProfileUpdate(request, response, request.getSession(false), usuarioSesion, nombre, correo);
     }
 
-    private Usuario resolveSessionUserOrRedirect(HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("usuario") == null) {
-            response.sendRedirect(request.getContextPath() + "/login?error=session_expired");
-            return null;
-        }
-        return (Usuario) session.getAttribute("usuario");
-    }
+    // moved resolveSessionUserOrRedirect to AuthHelper to centralize session checks
 
     private void consumePasswordFields(HttpServletRequest request) {
         // Campos presentes en UI por requerimiento, sin funcionalidad de cambio de clave por ahora.
