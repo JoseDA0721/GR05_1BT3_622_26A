@@ -43,38 +43,65 @@ public class EditProfileServlet extends HttpServlet {
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
 
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("usuario") == null) {
-            response.sendRedirect(request.getContextPath() + "/login?error=session_expired");
+        Usuario usuarioSesion = resolveSessionUserOrRedirect(request, response);
+        if (usuarioSesion == null) {
             return;
         }
 
-        Usuario usuarioSesion = (Usuario) session.getAttribute("usuario");
         String nombre = request.getParameter("name");
         String correo = request.getParameter("email");
+        consumePasswordFields(request);
 
+        processProfileUpdate(request, response, request.getSession(false), usuarioSesion, nombre, correo);
+    }
+
+    private Usuario resolveSessionUserOrRedirect(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("usuario") == null) {
+            response.sendRedirect(request.getContextPath() + "/login?error=session_expired");
+            return null;
+        }
+        return (Usuario) session.getAttribute("usuario");
+    }
+
+    private void consumePasswordFields(HttpServletRequest request) {
         // Campos presentes en UI por requerimiento, sin funcionalidad de cambio de clave por ahora.
         request.getParameter("password");
         request.getParameter("confirmPassword");
+    }
 
+    private void processProfileUpdate(HttpServletRequest request,
+                                      HttpServletResponse response,
+                                      HttpSession session,
+                                      Usuario usuarioSesion,
+                                      String nombre,
+                                      String correo) throws ServletException, IOException {
         try {
             Usuario actualizado = usuarioService.actualizarPerfilBasico(usuarioSesion.getId(), nombre, correo);
             session.setAttribute("usuario", actualizado);
             request.setAttribute("success", "Perfil actualizado correctamente");
             populateForm(request, actualizado);
-            request.getRequestDispatcher("/WEB-INF/views/inc1/edit-profile.jsp").forward(request, response);
+            forwardToEditProfile(request, response);
         } catch (ServiceValidationException e) {
-            request.setAttribute("error", e.getMessage());
-            request.setAttribute("formName", nombre);
-            request.setAttribute("formEmail", correo);
-            request.getRequestDispatcher("/WEB-INF/views/inc1/edit-profile.jsp").forward(request, response);
+            setErrorAndFormData(request, e.getMessage(), nombre, correo);
+            forwardToEditProfile(request, response);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error al actualizar perfil", e);
-            request.setAttribute("error", "No se pudo actualizar el perfil. Intenta nuevamente.");
-            request.setAttribute("formName", nombre);
-            request.setAttribute("formEmail", correo);
-            request.getRequestDispatcher("/WEB-INF/views/inc1/edit-profile.jsp").forward(request, response);
+            setErrorAndFormData(request, "No se pudo actualizar el perfil. Intenta nuevamente.", nombre, correo);
+            forwardToEditProfile(request, response);
         }
+    }
+
+    private void setErrorAndFormData(HttpServletRequest request, String message, String nombre, String correo) {
+        request.setAttribute("error", message);
+        request.setAttribute("formName", nombre);
+        request.setAttribute("formEmail", correo);
+    }
+
+    private void forwardToEditProfile(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        request.getRequestDispatcher("/WEB-INF/views/inc1/edit-profile.jsp").forward(request, response);
     }
 
     private void populateForm(HttpServletRequest request, Usuario usuario) {
@@ -82,4 +109,3 @@ public class EditProfileServlet extends HttpServlet {
         request.setAttribute("formEmail", usuario != null ? usuario.getCorreoElectronico() : "");
     }
 }
-
