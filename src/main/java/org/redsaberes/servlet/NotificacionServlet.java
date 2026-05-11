@@ -25,18 +25,22 @@ public class NotificacionServlet extends HttpServlet {
 
     private final NotificacionService notificacionService = ServiceFactory.getNotificacionService();
 
+    private Usuario getUsuarioFromSession(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("usuario") == null) {
+            response.sendRedirect(request.getContextPath() + "/login?error=session_expired");
+            return null;
+        }
+        return (Usuario) session.getAttribute("usuario");
+    }
+
     @Override
     protected void doGet(HttpServletRequest request,
                          HttpServletResponse response
     ) throws ServletException, IOException {
         try{
-            HttpSession session = request.getSession(false);
-            if (session == null || session.getAttribute("usuario") == null) {
-                response.sendRedirect(request.getContextPath() + "/login?error=session_expired");
-                return;
-            }
-
-            Usuario usuario = (Usuario) session.getAttribute("usuario");
+            Usuario usuario = getUsuarioFromSession(request, response);
+            if (usuario == null) return;
 
             // Obtener todas las notificaciones del usuario (historial completo)
             var todasNotificaciones = notificacionService.getAllNotifications(usuario.getId());
@@ -56,13 +60,8 @@ public class NotificacionServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
-            HttpSession session = request.getSession(false);
-            if (session == null || session.getAttribute("usuario") == null) {
-                response.sendRedirect(request.getContextPath() + "/login?error=session_expired");
-                return;
-            }
-
-            Usuario usuarioSesion = (Usuario) session.getAttribute("usuario");
+            Usuario usuarioSesion = getUsuarioFromSession(request, response);
+            if (usuarioSesion == null) return;
 
             String notificacionIdParam = request.getParameter("notificacionId");
             if (notificacionIdParam == null || notificacionIdParam.isBlank()) {

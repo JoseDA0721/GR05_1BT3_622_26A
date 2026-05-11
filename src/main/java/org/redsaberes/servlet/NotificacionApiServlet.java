@@ -13,6 +13,7 @@ import org.redsaberes.service.NotificacionService;
 import java.io.IOException;
 import java.io.Serial;
 import java.util.List;
+import java.util.StringJoiner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -62,24 +63,13 @@ public class NotificacionApiServlet extends HttpServlet {
      * Formato: { "total": 2, "items": [ { "id": 1, "descripcion": "...", "fechaCreacion": "2026-05-06" }, ... ] }
      */
     private String buildJsonResponse(List<Notificacion> notificaciones) {
-        StringBuilder json = new StringBuilder();
-        json.append("{\"total\":").append(notificaciones.size()).append(",\"items\":[");
-
-        for (int i = 0; i < notificaciones.size(); i++) {
-            Notificacion n = notificaciones.get(i);
-            json.append("{")
-                    .append("\"id\":").append(n.getId()).append(",")
-                    .append("\"descripcion\":\"").append(escapeJson(n.getDescripcion())).append("\",")
-                    .append("\"fechaCreacion\":\"").append(n.getFechaCreacion()).append("\"")
-                    .append("}");
-
-            if (i < notificaciones.size() - 1) {
-                json.append(",");
-            }
+        StringJoiner items = new StringJoiner(",", "[", "]");
+        for (Notificacion n : notificaciones) {
+            items.add("{\"id\":" + n.getId() + "," +
+                    "\"descripcion\":\"" + escapeJson(n.getDescripcion()) + "\"," +
+                    "\"fechaCreacion\":\"" + n.getFechaCreacion() + "\"}");
         }
-
-        json.append("]}");
-        return json.toString();
+        return "{\"total\":" + notificaciones.size() + ",\"items\":" + items + "}";
     }
 
     /**
